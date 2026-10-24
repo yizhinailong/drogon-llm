@@ -1,0 +1,23 @@
+{
+  "app": {
+    "number_of_threads": 1,
+    "document_root": "/tmp/drogon-llm-example",
+    "upload_path": "uploads",
+    "log": {
+      "log_path": "",
+      "logfile_base_name": "",
+      "log_size_limit": 100000000,
+      "log_level": "DEBUG"
+    }
+  },
+  "plugins": [
+    {
+      "name": "drogon_llm::LlmClient",
+      "config": {
+        "base_url": "https://api.deepseek.com",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "model": "deepseek-flash"
+      }
+    }
+  ]
+}
