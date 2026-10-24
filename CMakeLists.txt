@@ -6,6 +6,7 @@ project(
     VERSION 0.1.0
 )
 
+option(DROGON_LLM_BUILD_TESTS "Build the test executables" ${PROJECT_IS_TOP_LEVEL})
 option(DROGON_LLM_INSTALL "Generate install and package config rules" ${PROJECT_IS_TOP_LEVEL})
 
 include(GNUInstallDirs)
@@ -50,6 +51,10 @@ target_link_libraries(
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+
+if(DROGON_LLM_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
 
 if(DROGON_LLM_INSTALL)
     set(PACKAGE_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
