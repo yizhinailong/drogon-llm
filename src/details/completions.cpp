@@ -139,16 +139,21 @@ namespace drogon_llm::details {
         : m_transport{ std::move(transport) } {}
 
     /**
-     * @brief Generate a reply to a conversation, like `client.chat.completions.create()`.
-     * @param params Request fields.
-     * @return The completion, or why the request failed.
-     * @note Blocks the calling thread until the response arrives. The HTTP client runs on
-     * the app's main event loop, so never call this on that loop's thread (e.g. from a
-     * beginning advice): it would deadlock, and debug builds of drogon assert.
+     * @brief Generate a reply to a conversation, like `await client.chat.completions.create()`.
+     * @param params Request fields, taken by value so they outlive the caller's frame.
+     * @return Task yielding the completion, or why the request failed.
+     * @note The request runs on the calling thread's event loop (the main loop when the
+     * thread runs none), so the coroutine resumes on the thread that awaited it. To block
+     * on it with `drogon::sync_wait()`, call from a thread that runs no event loop.
      */
-    auto Completions::Create(ChatCompletionCreateParams const& params) -> Result<ChatCompletion> {
-        Json::Value const body{ to_request_body(params, m_transport->Config().model) };
-        return m_transport->Post("/chat/completions", body, params.timeout).and_then(parse_chat_completion);
+    auto Completions::Create(
+        ChatCompletionCreateParams params
+    ) -> drogon::Task<Result<ChatCompletion>> {
+        // Keep the transport in the coroutine frame in case this object dies mid-request.
+        auto const transport{ m_transport };
+        auto body{ to_request_body(params, transport->Config().model) };
+        auto const response{ co_await transport->Post("/chat/completions", std::move(body), params.timeout) };
+        co_return response.and_then(parse_chat_completion);
     }
 
 } // namespace drogon_llm::details

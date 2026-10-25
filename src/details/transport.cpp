@@ -5,7 +5,12 @@
 #include "details/transport.hpp"
 
 #include <format>
+#include <string_view>
+#include <tuple>
 #include <utility>
+
+#include <drogon/HttpAppFramework.h>
+#include <drogon/HttpClient.h>
 
 namespace {
 
@@ -45,19 +50,26 @@ namespace {
         return std::string{ response.body() };
     }
 
+    /**
+     * @brief Pick the event loop for a new HTTP client.
+     * @return The calling thread's loop, or the app's main loop when the thread runs none.
+     */
+    auto current_loop() -> trantor::EventLoop* {
+        auto* const loop{ trantor::EventLoop::getEventLoopOfCurrentThread() };
+        return loop != nullptr ? loop : drogon::app().getLoop();
+    }
+
 } // namespace
 
 namespace drogon_llm::details {
 
     /**
-     * @brief Create an HTTP client for the scheme, host, and port of `config.base_url`.
+     * @brief Store the endpoint settings and split `config.base_url`.
      * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
      */
     Transport::Transport(LlmConfig config)
         : m_config{ std::move(config) } {
-        auto [host, path_prefix]{ split_base_url(m_config.base_url) };
-        m_path_prefix = std::move(path_prefix);
-        m_http_client = drogon::HttpClient::newHttpClient(host);
+        std::tie(m_host, m_path_prefix) = split_base_url(m_config.base_url);
     }
 
     /**
@@ -69,36 +81,39 @@ namespace drogon_llm::details {
     }
 
     /**
-     * @brief POST a JSON body and wait for the JSON response.
+     * @brief POST a JSON body and await the JSON response.
      * @param path Path below `base_url`, e.g. `/chat/completions`.
      * @param body Request body.
      * @param timeout Seconds to wait for the response; 0 waits forever.
-     * @return The parsed body of a 2xx response, or why the request failed.
-     * @note Blocks the calling thread; never call it on the main event loop's thread.
+     * @return Task yielding the parsed body of a 2xx response, or why the request failed.
+     * @note The caller keeps this object alive until the task completes.
      */
     auto Transport::Post(
-        std::string_view path,
-        Json::Value const& body,
+        std::string path,
+        Json::Value body,
         double timeout
-    ) -> Result<Json::Value> {
+    ) const -> drogon::Task<Result<Json::Value>> {
         auto request{ drogon::HttpRequest::newHttpJsonRequest(body) };
         request->setMethod(drogon::Post);
-        request->setPath(m_path_prefix + std::string{ path });
+        request->setPath(m_path_prefix + path);
         if (!m_config.api_key.empty()) {
             request->addHeader("Authorization", "Bearer " + m_config.api_key);
         }
 
-        auto const [result, response]{ m_http_client->sendRequest(request, timeout) };
-        if (result != drogon::ReqResult::Ok) {
-            return std::unexpected{ Error{
-                .kind = result == drogon::ReqResult::Timeout ? ErrorKind::Timeout : ErrorKind::Connection,
-                .message = std::format("POST {}{}: {}", m_config.base_url, path, drogon::to_string_view(result)),
+        auto const client{ drogon::HttpClient::newHttpClient(m_host, current_loop()) };
+        drogon::HttpResponsePtr response{};
+        try {
+            response = co_await client->sendRequestCoro(request, timeout);
+        } catch (drogon::HttpException const& e) {
+            co_return std::unexpected{ Error{
+                .kind = e.code() == drogon::ReqResult::Timeout ? ErrorKind::Timeout : ErrorKind::Connection,
+                .message = std::format("POST {}{}: {}", m_config.base_url, path, e.what()),
             } };
         }
 
         auto const status{ static_cast<int>(response->getStatusCode()) };
         if (status < 200 || status >= 300) {
-            return std::unexpected{ Error{
+            co_return std::unexpected{ Error{
                 .kind = ErrorKind::Status,
                 .message = std::format("HTTP {}: {}", status, status_error_message(*response)),
                 .status_code = status,
@@ -108,13 +123,13 @@ namespace drogon_llm::details {
 
         auto const& json{ response->getJsonObject() };
         if (json == nullptr) {
-            return std::unexpected{ Error{
+            co_return std::unexpected{ Error{
                 .kind = ErrorKind::ResponseValidation,
                 .message = std::format("response body is not JSON: {}", response->getJsonError()),
                 .body = std::string{ response->body() },
             } };
         }
-        return *json;
+        co_return *json;
     }
 
 } // namespace drogon_llm::details

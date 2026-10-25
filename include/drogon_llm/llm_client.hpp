@@ -23,10 +23,10 @@ namespace drogon_llm {
     };
 
     /**
-     * @brief Client for one OpenAI-format endpoint, laid out like the OpenAI Python SDK's `OpenAI`.
+     * @brief Client for one OpenAI-format endpoint, laid out like the OpenAI Python SDK's `AsyncOpenAI`.
      *
      * @code
-     * auto const completion{ llm.chat->completions->Create({
+     * auto const completion{ co_await llm->chat->completions->Create({
      *     .messages = { { .role = "user", .content = "Hello!" } },
      * }) };
      * if (completion) {

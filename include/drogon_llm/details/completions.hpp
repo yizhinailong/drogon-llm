@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include <drogon/utils/coroutine.h>
+
 #include "drogon_llm/error.hpp"
 #include "drogon_llm/types/chat.hpp"
 
@@ -25,16 +27,18 @@ namespace drogon_llm::details {
         explicit Completions(std::shared_ptr<Transport> transport);
 
         /**
-         * @brief Generate a reply to a conversation, like `client.chat.completions.create()`.
-         * @param params Request fields.
-         * @return The completion, or why the request failed.
-         * @note Blocks the calling thread until the response arrives. The HTTP client runs on
-         * the app's main event loop, so never call this on that loop's thread (e.g. from a
-         * beginning advice): it would deadlock, and debug builds of drogon assert.
+         * @brief Generate a reply to a conversation, like `await client.chat.completions.create()`.
+         * @param params Request fields, taken by value so they outlive the caller's frame.
+         * @return Task yielding the completion, or why the request failed.
+         * @note The request runs on the calling thread's event loop (the main loop when the
+         * thread runs none), so the coroutine resumes on the thread that awaited it. To block
+         * on it with `drogon::sync_wait()`, call from a thread that runs no event loop.
          */
-        [[nodiscard]] auto Create(ChatCompletionCreateParams const& params) -> Result<ChatCompletion>;
+        [[nodiscard]] auto Create(
+            ChatCompletionCreateParams params
+        ) -> drogon::Task<Result<ChatCompletion>>;
 
-        // TODO: add a coroutine variant and streaming (`stream: true`).
+        // TODO: add streaming (`stream: true`).
 
     private:
         std::shared_ptr<Transport> m_transport; ///< Connection shared with the other API groups.
