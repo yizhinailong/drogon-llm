@@ -1,12 +1,15 @@
 /**
  * @file llm_client.cpp
- * @brief Implement the drogon plugin that holds the LLM endpoint settings.
+ * @brief Implement the `Llm` client and the drogon plugin that holds its endpoint settings.
  */
 #include "drogon_llm/llm_client.hpp"
 
 #include <cstdlib>
 #include <format>
 #include <stdexcept>
+#include <utility>
+
+#include "details/transport.hpp"
 
 namespace {
 
@@ -30,6 +33,13 @@ namespace {
 } // namespace
 
 namespace drogon_llm {
+
+    /**
+     * @brief Create a client for the endpoint in `config`.
+     * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
+     */
+    Llm::Llm(LlmConfig config)
+        : chat{ std::make_unique<details::Chat>(std::make_shared<details::Transport>(std::move(config))) } {}
 
     /**
      * @brief Read the endpoint settings from the plugin's `config` object.
@@ -59,6 +69,14 @@ namespace drogon_llm {
      */
     auto LlmClient::Config() const noexcept -> LlmConfig const& {
         return m_config;
+    }
+
+    /**
+     * @brief Create an `Llm` client for the configured endpoint.
+     * @return A new client; call only after drogon has initialized the plugin.
+     */
+    auto LlmClient::NewLlmClient() -> std::shared_ptr<Llm> {
+        return std::make_shared<Llm>(m_config);
     }
 
 } // namespace drogon_llm

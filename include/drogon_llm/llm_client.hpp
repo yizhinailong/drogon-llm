@@ -1,22 +1,48 @@
 /**
  * @file llm_client.hpp
- * @brief Declare the drogon plugin that holds the LLM endpoint settings.
+ * @brief Declare the `Llm` client and the drogon plugin that holds its endpoint settings.
  */
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include <drogon/plugins/Plugin.h>
 
+#include "drogon_llm/details/chat.hpp"
+
 namespace drogon_llm {
 
     /**
-     * @brief Endpoint settings read from the plugin's `config` object.
+     * @brief Endpoint settings of an `Llm`; the plugin reads them from its `config` object.
      */
     struct LlmConfig {
-        std::string base_url; ///< API base URL, e.g. `https://api.openai.com/v1`.
-        std::string api_key;  ///< Bearer token from the `api_key_env` variable; empty without it.
-        std::string model;    ///< Default model name sent with each request.
+        std::string base_url{ "https://api.openai.com/v1" }; ///< API base URL; OpenAI's by default.
+        std::string api_key;                                 ///< Bearer token from the `api_key_env` variable; empty without it.
+        std::string model;                                   ///< Model sent when a request leaves `model` unset.
+    };
+
+    /**
+     * @brief Client for one OpenAI-format endpoint, laid out like the OpenAI Python SDK's `OpenAI`.
+     *
+     * @code
+     * auto const completion{ llm.chat->completions->Create({
+     *     .messages = { { .role = "user", .content = "Hello!" } },
+     * }) };
+     * if (completion) {
+     *     std::println("{}", completion->choices.front().message.content.value_or(""));
+     * }
+     * @endcode
+     */
+    class Llm final {
+    public:
+        /**
+         * @brief Create a client for the endpoint in `config`.
+         * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
+         */
+        explicit Llm(LlmConfig config);
+
+        std::unique_ptr<details::Chat> chat{}; ///< Chat API group.
     };
 
     /**
@@ -35,7 +61,8 @@ namespace drogon_llm {
      * without auth.
      *
      * Then fetch it once `app().run()` has started, e.g. from a beginning advice
-     * or a handler: `drogon::app().getPlugin<drogon_llm::LlmClient>()`.
+     * or a handler: `drogon::app().getPlugin<drogon_llm::LlmClient>()`, and
+     * call `NewLlmClient()` for an `Llm` bound to these settings.
      *
      * @note With a static build, the plugin registers itself only if the
      * application references this class (calling `getPlugin<LlmClient>()` is
@@ -61,6 +88,12 @@ namespace drogon_llm {
          * @return Settings valid after drogon has initialized the plugin.
          */
         [[nodiscard]] auto Config() const noexcept -> LlmConfig const&;
+
+        /**
+         * @brief Create an `Llm` client for the configured endpoint.
+         * @return A new client; call only after drogon has initialized the plugin.
+         */
+        [[nodiscard]] auto NewLlmClient() -> std::shared_ptr<Llm>;
 
     private:
         LlmConfig m_config; ///< Settings parsed in `initAndStart()`.

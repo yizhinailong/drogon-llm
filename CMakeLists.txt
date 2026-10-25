@@ -50,7 +50,7 @@ target_link_libraries(
     Drogon::Drogon
 )
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
 if(DROGON_LLM_BUILD_TESTS)
     add_subdirectory(tests)
