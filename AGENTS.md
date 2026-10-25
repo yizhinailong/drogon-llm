@@ -25,6 +25,8 @@ The library supports two ways to consume it. Keep both working when you change `
 
 `tests/test_config.cpp` loads `config.json` relative to the working directory (`just run` uses the repo root), prints the plugin's settings, then calls `app().quit()`.
 
+`tests/test_http_client.cpp` sends one real chat completion request with `drogon::HttpClient` (`sendRequestCoro` inside `drogon::async_run` from a beginning advice). It needs network access and a valid key, spends a few tokens, and takes a few seconds against DeepSeek. It splits `base_url` into the host (for `newHttpClient`) and a path prefix, POSTs OpenAI-format JSON to `<prefix>/chat/completions`, prints `reasoning_content` (present because DeepSeek flash thinks by default), `content`, and `usage`, and exits 1 on a non-200 status or an `HttpException`.
+
 `config.json` (repo root, tracked, no secrets) points at DeepSeek: `base_url` `https://api.deepseek.com` (OpenAI format), model `deepseek-flash`, and the key from `DEEPSEEK_API_KEY`. `test_config` aborts with `environment variable DEEPSEEK_API_KEY is unset or empty` until that variable is exported. Drogon creates `uploads/` under `document_root` (`/tmp/drogon-llm-example`) on startup.
 
 ## Commands
