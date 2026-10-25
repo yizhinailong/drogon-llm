@@ -6,6 +6,7 @@
 
 #include <cstdlib>
 #include <format>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -39,7 +40,7 @@ namespace drogon_llm {
      * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
      */
     Llm::Llm(LlmConfig config)
-        : chat{ std::make_unique<details::Chat>(std::make_shared<details::Transport>(std::move(config))) } {}
+        : chat{ std::make_shared<details::Transport>(std::move(config)) } {}
 
     /**
      * @brief Read the endpoint settings from the plugin's `config` object.
@@ -75,8 +76,8 @@ namespace drogon_llm {
      * @brief Create an `Llm` client for the configured endpoint.
      * @return A new client; call only after drogon has initialized the plugin.
      */
-    auto LlmClient::NewLlmClient() -> std::shared_ptr<Llm> {
-        return std::make_shared<Llm>(m_config);
+    auto LlmClient::NewLlmClient() const -> Llm {
+        return Llm{ m_config };
     }
 
 } // namespace drogon_llm

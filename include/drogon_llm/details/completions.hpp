@@ -16,7 +16,7 @@ namespace drogon_llm::details {
     class Transport;
 
     /**
-     * @brief Chat completions API group, reached through `llm.chat->completions`.
+     * @brief Chat completions API group, reached through `llm.chat.completions`.
      */
     class Completions {
     public:
@@ -36,7 +36,7 @@ namespace drogon_llm::details {
          */
         [[nodiscard]] auto Create(
             ChatCompletionCreateParams params
-        ) -> drogon::Task<Result<ChatCompletion>>;
+        ) const -> drogon::Task<Result<ChatCompletion>>;
 
         // TODO: add streaming (`stream: true`).
 

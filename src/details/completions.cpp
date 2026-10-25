@@ -148,7 +148,7 @@ namespace drogon_llm::details {
      */
     auto Completions::Create(
         ChatCompletionCreateParams params
-    ) -> drogon::Task<Result<ChatCompletion>> {
+    ) const -> drogon::Task<Result<ChatCompletion>> {
         // Keep the transport in the coroutine frame in case this object dies mid-request.
         auto const transport{ m_transport };
         auto body{ to_request_body(params, transport->Config().model) };

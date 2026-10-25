@@ -13,6 +13,6 @@ namespace drogon_llm::details {
      * @param transport Connection shared by the API groups of one `Llm`.
      */
     Chat::Chat(std::shared_ptr<Transport> transport)
-        : completions{ std::make_unique<Completions>(std::move(transport)) } {}
+        : completions{ std::move(transport) } {}
 
 } // namespace drogon_llm::details

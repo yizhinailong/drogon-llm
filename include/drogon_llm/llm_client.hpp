@@ -4,7 +4,6 @@
  */
 #pragma once
 
-#include <memory>
 #include <string>
 
 #include <drogon/plugins/Plugin.h>
@@ -26,13 +25,16 @@ namespace drogon_llm {
      * @brief Client for one OpenAI-format endpoint, laid out like the OpenAI Python SDK's `AsyncOpenAI`.
      *
      * @code
-     * auto const completion{ co_await llm->chat->completions->Create({
+     * auto const completion{ co_await llm.chat.completions.Create({
      *     .messages = { { .role = "user", .content = "Hello!" } },
      * }) };
      * if (completion) {
      *     std::println("{}", completion->choices.front().message.content.value_or(""));
      * }
      * @endcode
+     *
+     * A cheap handle: copies share one transport, which is safe to use from any thread.
+     * Pass it to coroutines by value.
      */
     class Llm final {
     public:
@@ -42,7 +44,7 @@ namespace drogon_llm {
          */
         explicit Llm(LlmConfig config);
 
-        std::unique_ptr<details::Chat> chat{}; ///< Chat API group.
+        details::Chat chat; ///< Chat API group.
     };
 
     /**
@@ -93,7 +95,7 @@ namespace drogon_llm {
          * @brief Create an `Llm` client for the configured endpoint.
          * @return A new client; call only after drogon has initialized the plugin.
          */
-        [[nodiscard]] auto NewLlmClient() -> std::shared_ptr<Llm>;
+        [[nodiscard]] auto NewLlmClient() const -> Llm;
 
     private:
         LlmConfig m_config; ///< Settings parsed in `initAndStart()`.

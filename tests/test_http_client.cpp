@@ -1,12 +1,10 @@
 /**
  * @file test_http_client.cpp
- * @brief Send one chat completion request through `Llm::chat->completions` to the configured endpoint.
+ * @brief Send one chat completion request through `Llm::chat.completions` to the configured endpoint.
  */
-#include <memory>
 #include <print>
 #include <string>
 #include <string_view>
-#include <utility>
 
 #include <drogon/drogon.h>
 #include <drogon/utils/coroutine.h>
@@ -20,11 +18,11 @@ namespace {
 
     /**
      * @brief Send `PROMPT` and print the reply.
-     * @param llm Client created by the LlmClient plugin, taken by value to outlive the caller's frame.
+     * @param llm Client created by the LlmClient plugin, copied so it outlives the caller's frame.
      * @return True if the request succeeded and returned at least one choice.
      */
-    auto send_chat(std::shared_ptr<drogon_llm::Llm> llm) -> drogon::Task<bool> {
-        auto const completion{ co_await llm->chat->completions->Create({
+    auto send_chat(drogon_llm::Llm llm) -> drogon::Task<bool> {
+        auto const completion{ co_await llm.chat.completions.Create({
             .messages = { { .role = "user", .content = std::string{ PROMPT } } },
             .timeout = REQUEST_TIMEOUT,
         }) };
@@ -62,8 +60,9 @@ auto main() -> int {
         .loadConfigFile("config.json")
         .registerBeginningAdvice([&exit_code] {
             drogon::async_run([&exit_code]() -> drogon::Task<> {
-                auto llm{ drogon::app().getPlugin<drogon_llm::LlmClient>()->NewLlmClient() };
-                bool const ok{ co_await send_chat(std::move(llm)) };
+                bool const ok{
+                    co_await send_chat(drogon::app().getPlugin<drogon_llm::LlmClient>()->NewLlmClient())
+                };
                 exit_code = ok ? 0 : 1;
                 drogon::app().quit();
             });

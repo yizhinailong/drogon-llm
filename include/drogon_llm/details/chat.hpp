@@ -21,7 +21,7 @@ namespace drogon_llm::details {
          */
         explicit Chat(std::shared_ptr<Transport> transport);
 
-        std::unique_ptr<Completions> completions{}; ///< Chat completions API group.
+        Completions completions; ///< Chat completions API group.
     };
 
 } // namespace drogon_llm::details
