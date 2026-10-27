@@ -2,7 +2,7 @@
 
 ## Project state
 
-Early-stage Drogon plugin library for OpenAI-compatible APIs: OpenAI itself, or any endpoint that speaks the same format, such as DeepSeek. It is consumed by other Drogon apps (e.g. `../assistant-bot`). No tests or CI yet.
+Early-stage Drogon plugin library for OpenAI-compatible APIs: OpenAI itself, or any endpoint that speaks the same format, such as DeepSeek. It is consumed by other Drogon apps (e.g. `../assistantbot`). No tests or CI yet.
 
 - The library target is `drogon-openai` (alias `drogon-openai::drogon-openai`). It is static by default; pass `-DBUILD_SHARED_LIBS=ON` for a shared build.
 - Public headers live in `include/drogon_openai/` and are installed through the `HEADERS` file set. Consumers include `<drogon_openai/...>`. Private headers go in `src/`, which is only on the library's own include path.
@@ -51,6 +51,6 @@ The library supports two ways to consume it. Keep both working when you change `
 
 ## Code style
 
-New C++ code follows the `cpp-style-ref` skill (CMake + vcpkg variant), the same as `../assistant-bot`: types and public methods PascalCase, private members `m_`, namespaces lowercase, `/** @file ... @brief ... */` at the top of every file, Doxygen blocks repeated on out-of-line definitions, `T const&`, brace initialization, and trailing return types. Drogon's virtual overrides (`initAndStart`, `shutdown`) keep their upstream names.
+New C++ code follows the `cpp-style-ref` skill (CMake + vcpkg variant), the same as `../assistantbot`: types and public methods PascalCase, private members `m_`, namespaces lowercase, `/** @file ... @brief ... */` at the top of every file, Doxygen blocks repeated on out-of-line definitions, `T const&`, brace initialization, and trailing return types. Drogon's virtual overrides (`initAndStart`, `shutdown`) keep their upstream names.
 
-Format with `clang-format -i <files>` (root `.clang-format`, same as `../assistant-bot`). Check with `clang-format --dry-run -Werror <files>`.
+Format with `clang-format -i <files>` (root `.clang-format`, same as `../assistantbot`). Check with `clang-format --dry-run -Werror <files>`.
