@@ -1,5 +1,7 @@
 # drogon 插件：`drogon_openai::OpenAIClient`
 
+[English](../en/drogon-plugin.md) · 简体中文
+
 本文整理 drogon-openai 作为 drogon 插件的接入方式、配置、生命周期和使用方法，以及与 drogon 线程模型相关的设计约束。对接的是 OpenAI 格式的 HTTP API：OpenAI 本身，或 DeepSeek 等使用相同请求格式的接口。
 
 ## 概览

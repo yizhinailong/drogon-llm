@@ -1,33 +1,35 @@
 # drogon-openai
 
-基于 [drogon](https://github.com/drogonframework/drogon) 的 OpenAI 格式 API 插件库，供其他 drogon 应用以插件形式使用。它可以对接 OpenAI，也可以对接 DeepSeek 等使用相同请求格式的接口。
+English · [简体中文](README.zh-CN.md)
 
-接口按 [OpenAI Python SDK](https://github.com/openai/openai-python) 的 `AsyncOpenAI` 组织：`co_await client.chat.completions.Create(...)` 返回 `drogon::Task<Result<ChatCompletion>>`，其中 `Result<T>` 即 `std::expected<T, Error>`。目前实现了 chat completions，还不支持流式输出。
+A plugin library for OpenAI-format APIs, built on [drogon](https://github.com/drogonframework/drogon) and used as a plugin by other drogon apps. It works with OpenAI and with any endpoint that uses the same request format, such as DeepSeek.
 
-[快速开始](#快速开始) · [文档索引](docs/README.md) · [插件使用说明](docs/drogon-plugin.md) · [版本标签与 Linux CI](docs/ci.md) · [Doxygen 使用说明](docs/doxygen.md)
+The API follows the `AsyncOpenAI` client of the [OpenAI Python SDK](https://github.com/openai/openai-python): `co_await client.chat.completions.Create(...)` returns `drogon::Task<Result<ChatCompletion>>`, where `Result<T>` is `std::expected<T, Error>`. Chat completions are implemented so far; streaming is not supported yet.
 
-## 环境与依赖
+[Quick start](#quick-start) · [Documentation index](docs/en/README.md) · [Plugin guide](docs/en/drogon-plugin.md) · [Version tags and Linux CI](docs/en/ci.md) · [Doxygen guide](docs/en/doxygen.md)
 
-| 依赖 | 版本 | 说明 |
+## Requirements
+
+| Dependency | Version | Notes |
 | --- | --- | --- |
-| CMake | ≥ 4.0 | 构建使用 `CMakePresets.json` 中的 `<os>-<profile>` 预设 |
-| Ninja、ccache | 任意较新版本 | 预设固定使用 Ninja 生成器和 ccache 编译器启动器 |
-| 编译器 | Linux 上为 `clang++`，Windows 上为 `clang-cl` | 公开头文件使用 `std::expected`，需要 C++23 |
-| [vcpkg](https://github.com/microsoft/vcpkg) | classic 模式 | 提供 drogon，需设置 `VCPKG_ROOT` |
-| drogon | 1.9.13 | 由 vcpkg 安装，`just init` 执行 `vcpkg install drogon` |
+| CMake | ≥ 4.0 | The build uses the `<os>-<profile>` presets in `CMakePresets.json` |
+| Ninja, ccache | Any recent version | The presets always use the Ninja generator and the ccache compiler launcher |
+| Compiler | `clang++` on Linux, `clang-cl` on Windows | The public headers use `std::expected`, which needs C++23 |
+| [vcpkg](https://github.com/microsoft/vcpkg) | Classic mode | Provides drogon; `VCPKG_ROOT` must be set |
+| drogon | 1.9.13 | Installed by vcpkg; `just init` runs `vcpkg install drogon` |
 
-[Linux CI](.github/workflows/linux-ci.yml) 在 Ubuntu 24.04 上运行 debug 和 release 两套配置：
+[Linux CI](.github/workflows/linux-ci.yml) runs a debug and a release configuration on Ubuntu 24.04:
 
-- 工具：CMake 4.2.3、LLVM 21，vcpkg 固定在提供 drogon 1.9.13 的提交；
-- 内容：检查格式、构建并运行离线测试。
+- Tools: CMake 4.2.3 and LLVM 21, with vcpkg pinned to the commit that provides drogon 1.9.13.
+- Steps: check the formatting, build, and run the offline tests.
 
-详见 [版本标签与 Linux CI](docs/ci.md)。
+See [Version tags and Linux CI](docs/en/ci.md).
 
-<a id="快速开始"></a>
+<a id="quick-start"></a>
 
-## 快速开始
+## Quick start
 
-在仓库根目录安装依赖、构建并运行测试：
+From the repository root, install the dependencies, build, and run the tests:
 
 ```sh
 just init
@@ -35,11 +37,11 @@ just build
 just test
 ```
 
-`just test` 通过 CTest 运行 `tests/test_*.cpp` 编译出的全部测试程序。测试使用 drogon 自带的测试框架，需要服务端的测试由同一个 app 充当 OpenAI 格式接口，因此不需要网络。唯一的例外是 `test_deepseek`：它真实调用 DeepSeek，只在设置了 `DEEPSEEK_API_KEY` 时运行，否则报告为跳过。不使用 just 时，`cmake --workflow --preset linux-debug` 依次完成配置、构建和测试。
+`just test` uses CTest to run every test program built from `tests/test_*.cpp`. The tests use drogon's own test framework. The tests that need a server use the same app as a stand-in for an OpenAI-format API, so they need no network access. The one exception is `test_deepseek`: it calls the real DeepSeek API and runs only when `DEEPSEEK_API_KEY` is set; otherwise it is reported as skipped. Without just, `cmake --workflow --preset linux-debug` configures, builds, and tests in one go.
 
-## 在项目中使用
+## Using it in a project
 
-源码方式（以 CPM 为例，也可以用 `add_subdirectory`）：
+From source (CPM shown here; `add_subdirectory` works too):
 
 ```cmake
 CPMAddPackage(
@@ -51,11 +53,11 @@ CPMAddPackage(
 target_link_libraries(app PRIVATE drogon-openai::drogon-openai)
 ```
 
-- `GIT_TAG` 也可以写版本标签：`CMakeLists.txt` 中 `project()` 的 `VERSION` 变化后，会自动创建 `v<VERSION>` 标签。
-- 作为子项目时，测试和安装规则默认关闭。
-- 也可以先执行 `just publish`，再在消费项目中用 `find_package(drogon-openai CONFIG REQUIRED)` 引入。
+- `GIT_TAG` can also name a version tag. When `VERSION` in the `project()` call of `CMakeLists.txt` changes, a `v<VERSION>` tag is created automatically.
+- As a subproject, the tests and install rules are off by default.
+- Alternatively, run `just publish` first, then use `find_package(drogon-openai CONFIG REQUIRED)` in the consuming project.
 
-在应用的 config.json 中注册插件。下例对接 DeepSeek，API key 只从环境变量读取：
+Register the plugin in the app's config.json. This example connects to DeepSeek, and the API key is read only from an environment variable:
 
 ```json
 "plugins": [
@@ -70,17 +72,17 @@ target_link_libraries(app PRIVATE drogon-openai::drogon-openai)
 ]
 ```
 
-对接 OpenAI 时，把 `base_url` 换成 `https://api.openai.com/v1`，并填写相应的模型名。
+For OpenAI, change `base_url` to `https://api.openai.com/v1` and set a matching model name.
 
-下面是完整程序：把 `POST /chat` 的请求体作为用户消息发给模型，返回模型的回复。
+Here is a complete program that sends the body of `POST /chat` to the model as a user message and returns the model's reply:
 
-- 处理函数是协程，`co_await` 等待模型回复时不阻塞 IO 线程。
-- 请求失败时不抛异常，`Error::message` 说明原因。
+- The handler is a coroutine, so waiting for the reply with `co_await` does not block the IO thread.
+- A failed request does not throw; `Error::message` explains what went wrong.
 
 ```cpp
 /**
  * @file main.cpp
- * @brief 把 POST /chat 的请求体发给模型，返回模型的回复。
+ * @brief Send the body of POST /chat to the model and return the model's reply.
  */
 #include <string>
 
@@ -89,8 +91,8 @@ target_link_libraries(app PRIVATE drogon-openai::drogon-openai)
 #include <drogon_openai/openai_client.hpp>
 
 /**
- * @brief 注册 /chat 路由并启动 drogon。
- * @return drogon 退出后返回零。
+ * @brief Register the /chat route and start drogon.
+ * @return Zero after drogon exits.
  */
 auto main() -> int {
     drogon::app()
@@ -119,18 +121,18 @@ auto main() -> int {
 }
 ```
 
-配置项、请求参数、错误分类、生命周期与线程模型见 [插件使用说明](docs/drogon-plugin.md)。
+The [plugin guide](docs/en/drogon-plugin.md) covers the configuration keys, the request parameters, the error kinds, the lifecycle, and the threading model.
 
-## 开发与文档
+## Development and documentation
 
-使用文档采用简体中文，API 标识符、命令和协议值保留原文；新增文档请加入 [文档索引](docs/README.md)。开发约定见 [AGENTS.md](AGENTS.md)：
+The user documentation comes in English (`docs/en/`) and Simplified Chinese (`docs/zh-CN/`), with matching file names, and API identifiers, commands, and protocol values left as they are. Write a new page in both languages and add it to each [documentation index](docs/en/README.md). [README.zh-CN.md](README.zh-CN.md) is the Simplified Chinese version of this file; when you change one, update the other. The development conventions are in [AGENTS.md](AGENTS.md):
 
-- 代码风格；
-- 用 `clang-format --dry-run -Werror` 检查格式；
-- 每次改动行为时同步更新文档。
+- the code style;
+- checking the formatting with `clang-format --dry-run -Werror`;
+- updating the documentation with every behavior change.
 
-安装 Doxygen 后，执行 `just docs` 生成 API 文档，首页为 `build/doxygen/html/index.html`。推送到 `master` 时，Documentation 工作流会自动生成文档并发布到 GitHub Pages。首次启用所需的设置见 [Doxygen 使用说明](docs/doxygen.md)。
+With Doxygen installed, `just docs` generates the API documentation. Its home page is `build/doxygen/html/index.html`. On pushes to `master`, the Documentation workflow generates the documentation and publishes it to GitHub Pages. The [Doxygen guide](docs/en/doxygen.md) describes the settings needed the first time.
 
-## 许可证
+## License
 
-采用 [MIT 许可证](LICENSE)。
+Released under the [MIT License](LICENSE).
