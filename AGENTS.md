@@ -36,7 +36,7 @@ The library supports two ways to consume it. Keep both working when you change `
 
 `just` drives the build. Recipes map onto CMake presets named `<os>-<profile>` (`linux-debug`, `linux-release`, `windows-debug`, `windows-release`), with build trees in `build/<preset>/`.
 
-- `just init`: `vcpkg install drogon` (classic mode, no `vcpkg.json`; `VCPKG_ROOT` must be set).
+- `just init`: run `vcpkg install` for the packages in `vcpkg_deps` (currently `drogon`), in classic mode (no `vcpkg.json`; `VCPKG_ROOT` must be set). On Windows it passes `--triplet x64-windows-static-md --host-triplet x64-windows-static-md`, so the dependencies are static libraries linked against the dynamic CRT, and the `windows-base` preset sets `VCPKG_TARGET_TRIPLET` to the same triplet so `find_package` looks in that installed tree. Keep the two in sync: the vcpkg toolchain ignores `VCPKG_DEFAULT_TRIPLET` and would fall back to `x64-windows`. Other platforms use vcpkg's default triplet.
 - `just build [debug|release]`: configure only if `build/<preset>/CMakeCache.txt` is missing, then build, then copy `compile_commands.json` to `build/`. A cache left by a failed configure makes this skip configure and fail with `loading 'build.ninja'`; fix it with `just configure debug --fresh`.
 - `just run <target> [profile]`: build everything, then run `build/<os>-<profile>/tests/<target>`, e.g. `just run test_config` or `just run test_config release`. `<target>` is required.
 - `just publish [profile]`: build (default `release`) and `cmake --install` into `publish/`.
