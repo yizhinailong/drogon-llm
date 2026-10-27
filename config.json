@@ -10,13 +10,19 @@
       "log_level": "DEBUG"
     }
   },
+  "listeners": [
+    {
+      "address": "127.0.0.1",
+      "port": 18081
+    }
+  ],
   "plugins": [
     {
       "name": "drogon_openai::OpenAIClient",
       "config": {
-        "base_url": "https://api.deepseek.com",
-        "api_key_env": "DEEPSEEK_API_KEY",
-        "model": "deepseek-flash"
+        "base_url": "http://127.0.0.1:18081/v1",
+        "api_key_env": "DROGON_OPENAI_TEST_API_KEY",
+        "model": "fake-model"
       }
     }
   ]

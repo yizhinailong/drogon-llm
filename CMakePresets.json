@@ -108,6 +108,52 @@
       "configurePreset": "linux-release"
     }
   ],
+  "testPresets": [
+    {
+      "name": "windows-debug",
+      "displayName": "Test Windows Debug",
+      "configurePreset": "windows-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "windows-release",
+      "displayName": "Test Windows Release",
+      "configurePreset": "windows-release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "linux-debug",
+      "displayName": "Test Linux Debug",
+      "configurePreset": "linux-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "linux-release",
+      "displayName": "Test Linux Release",
+      "configurePreset": "linux-release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    }
+  ],
   "workflowPresets": [
     {
       "name": "windows-debug",
@@ -119,6 +165,10 @@
         },
         {
           "type": "build",
+          "name": "windows-debug"
+        },
+        {
+          "type": "test",
           "name": "windows-debug"
         }
       ]
@@ -134,6 +184,10 @@
         {
           "type": "build",
           "name": "windows-release"
+        },
+        {
+          "type": "test",
+          "name": "windows-release"
         }
       ]
     },
@@ -148,6 +202,10 @@
         {
           "type": "build",
           "name": "linux-debug"
+        },
+        {
+          "type": "test",
+          "name": "linux-debug"
         }
       ]
     },
@@ -161,6 +219,10 @@
         },
         {
           "type": "build",
+          "name": "linux-release"
+        },
+        {
+          "type": "test",
           "name": "linux-release"
         }
       ]
