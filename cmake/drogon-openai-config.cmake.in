@@ -9,6 +9,6 @@ if(CMAKE_CXX_STANDARD STREQUAL "")
     unset(CMAKE_CXX_STANDARD)
 endif()
 
-include(${CMAKE_CURRENT_LIST_DIR}/drogon-llm-targets.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/drogon-openai-targets.cmake)
 
-check_required_components(drogon-llm)
+check_required_components(drogon-openai)

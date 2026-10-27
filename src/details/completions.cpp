@@ -2,13 +2,13 @@
  * @file completions.cpp
  * @brief Implement the chat completions API group that `Chat::completions` exposes.
  */
-#include "drogon_llm/details/completions.hpp"
+#include "drogon_openai/details/completions.hpp"
 
 #include <utility>
 
 #include "details/transport.hpp"
 
-namespace drogon_llm::details {
+namespace drogon_openai::details {
 
     namespace {
 
@@ -133,7 +133,7 @@ namespace drogon_llm::details {
 
     /**
      * @brief Bind the group to an endpoint.
-     * @param transport Connection shared by the API groups of one `Llm`.
+     * @param transport Connection shared by the API groups of one `OpenAI` client.
      */
     Completions::Completions(std::shared_ptr<Transport> transport)
         : m_transport{ std::move(transport) } {}
@@ -156,4 +156,4 @@ namespace drogon_llm::details {
         co_return response.and_then(parse_chat_completion);
     }
 
-} // namespace drogon_llm::details
+} // namespace drogon_openai::details

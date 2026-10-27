@@ -13,7 +13,7 @@
 
 #include <json/value.h>
 
-namespace drogon_llm {
+namespace drogon_openai {
 
     /**
      * @brief One message of the conversation sent to the model (`ChatCompletionMessageParam`).
@@ -30,7 +30,7 @@ namespace drogon_llm {
      */
     struct ChatCompletionCreateParams {
         std::vector<ChatCompletionMessageParam> messages; ///< Conversation so far, oldest first.
-        std::optional<std::string> model{};               ///< Model name; unset uses `LlmConfig::model`.
+        std::optional<std::string> model{};               ///< Model name; unset uses `OpenAIConfig::model`.
         std::optional<double> frequency_penalty{};        ///< -2.0 to 2.0; positive values discourage repeating tokens.
         std::optional<std::int64_t> max_tokens{};         ///< Upper bound on generated tokens.
         std::optional<double> presence_penalty{};         ///< -2.0 to 2.0; positive values encourage new topics.
@@ -79,4 +79,4 @@ namespace drogon_llm {
         std::optional<CompletionUsage> usage{};    ///< Token counts; unset if the endpoint sent none.
     };
 
-} // namespace drogon_llm
+} // namespace drogon_openai

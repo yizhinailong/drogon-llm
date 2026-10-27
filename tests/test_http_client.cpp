@@ -1,6 +1,6 @@
 /**
  * @file test_http_client.cpp
- * @brief Send one chat completion request through `Llm::chat.completions` to the configured endpoint.
+ * @brief Send one chat completion request through `OpenAI::chat.completions` to the configured endpoint.
  */
 #include <print>
 #include <string>
@@ -9,7 +9,7 @@
 #include <drogon/drogon.h>
 #include <drogon/utils/coroutine.h>
 
-#include <drogon_llm/llm_client.hpp>
+#include <drogon_openai/openai_client.hpp>
 
 namespace {
 
@@ -18,11 +18,11 @@ namespace {
 
     /**
      * @brief Send `PROMPT` and print the reply.
-     * @param llm Client created by the LlmClient plugin, copied so it outlives the caller's frame.
+     * @param client Client created by the OpenAIClient plugin, copied so it outlives the caller's frame.
      * @return True if the request succeeded and returned at least one choice.
      */
-    auto send_chat(drogon_llm::Llm llm) -> drogon::Task<bool> {
-        auto const completion{ co_await llm.chat.completions.Create({
+    auto send_chat(drogon_openai::OpenAI client) -> drogon::Task<bool> {
+        auto const completion{ co_await client.chat.completions.Create({
             .messages = { { .role = "user", .content = std::string{ PROMPT } } },
             .timeout = REQUEST_TIMEOUT,
         }) };
@@ -61,7 +61,7 @@ auto main() -> int {
         .registerBeginningAdvice([&exit_code] {
             drogon::async_run([&exit_code]() -> drogon::Task<> {
                 bool const ok{
-                    co_await send_chat(drogon::app().getPlugin<drogon_llm::LlmClient>()->NewLlmClient())
+                    co_await send_chat(drogon::app().getPlugin<drogon_openai::OpenAIClient>()->NewOpenAIClient())
                 };
                 exit_code = ok ? 0 : 1;
                 drogon::app().quit();

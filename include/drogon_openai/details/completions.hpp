@@ -8,21 +8,21 @@
 
 #include <drogon/utils/coroutine.h>
 
-#include "drogon_llm/error.hpp"
-#include "drogon_llm/types/chat.hpp"
+#include "drogon_openai/error.hpp"
+#include "drogon_openai/types/chat.hpp"
 
-namespace drogon_llm::details {
+namespace drogon_openai::details {
 
     class Transport;
 
     /**
-     * @brief Chat completions API group, reached through `llm.chat.completions`.
+     * @brief Chat completions API group, reached through `client.chat.completions`.
      */
     class Completions {
     public:
         /**
          * @brief Bind the group to an endpoint.
-         * @param transport Connection shared by the API groups of one `Llm`.
+         * @param transport Connection shared by the API groups of one `OpenAI` client.
          */
         explicit Completions(std::shared_ptr<Transport> transport);
 
@@ -44,4 +44,4 @@ namespace drogon_llm::details {
         std::shared_ptr<Transport> m_transport; ///< Connection shared with the other API groups.
     };
 
-} // namespace drogon_llm::details
+} // namespace drogon_openai::details

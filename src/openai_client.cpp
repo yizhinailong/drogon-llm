@@ -1,8 +1,8 @@
 /**
- * @file llm_client.cpp
- * @brief Implement the `Llm` client and the drogon plugin that holds its endpoint settings.
+ * @file openai_client.cpp
+ * @brief Implement the `OpenAI` client and the drogon plugin that holds its endpoint settings.
  */
-#include "drogon_llm/llm_client.hpp"
+#include "drogon_openai/openai_client.hpp"
 
 #include <cstdlib>
 #include <format>
@@ -26,20 +26,20 @@ namespace {
         }
         char const* value{ std::getenv(env_name.c_str()) };
         if (value == nullptr || *value == '\0') {
-            throw std::invalid_argument{ std::format("drogon_llm::LlmClient: environment variable {} is unset or empty", env_name) };
+            throw std::invalid_argument{ std::format("drogon_openai::OpenAIClient: environment variable {} is unset or empty", env_name) };
         }
         return value;
     }
 
 } // namespace
 
-namespace drogon_llm {
+namespace drogon_openai {
 
     /**
      * @brief Create a client for the endpoint in `config`.
      * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
      */
-    Llm::Llm(LlmConfig config)
+    OpenAI::OpenAI(OpenAIConfig config)
         : chat{ std::make_shared<details::Transport>(std::move(config)) } {}
 
     /**
@@ -48,36 +48,36 @@ namespace drogon_llm {
      * @throws std::invalid_argument If `base_url` or `model` is missing or empty,
      * or if `api_key_env` names an unset or empty environment variable.
      */
-    auto LlmClient::initAndStart(Json::Value const& config) -> void {
-        m_config = LlmConfig{
+    auto OpenAIClient::initAndStart(Json::Value const& config) -> void {
+        m_config = OpenAIConfig{
             .base_url = config.get("base_url", "").asString(),
             .api_key = read_api_key(config.get("api_key_env", "").asString()),
             .model = config.get("model", "").asString(),
         };
         if (m_config.base_url.empty() || m_config.model.empty()) {
-            throw std::invalid_argument{ "drogon_llm::LlmClient: config needs non-empty base_url and model" };
+            throw std::invalid_argument{ "drogon_openai::OpenAIClient: config needs non-empty base_url and model" };
         }
     }
 
     /**
      * @brief Release resources on application shutdown.
      */
-    auto LlmClient::shutdown() -> void {}
+    auto OpenAIClient::shutdown() -> void {}
 
     /**
      * @brief Return the settings parsed from config.json.
      * @return Settings valid after drogon has initialized the plugin.
      */
-    auto LlmClient::Config() const noexcept -> LlmConfig const& {
+    auto OpenAIClient::Config() const noexcept -> OpenAIConfig const& {
         return m_config;
     }
 
     /**
-     * @brief Create an `Llm` client for the configured endpoint.
+     * @brief Create an `OpenAI` client for the configured endpoint.
      * @return A new client; call only after drogon has initialized the plugin.
      */
-    auto LlmClient::NewLlmClient() const -> Llm {
-        return Llm{ m_config };
+    auto OpenAIClient::NewOpenAIClient() const -> OpenAI {
+        return OpenAI{ m_config };
     }
 
-} // namespace drogon_llm
+} // namespace drogon_openai

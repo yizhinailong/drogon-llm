@@ -1,6 +1,6 @@
 /**
  * @file transport.hpp
- * @brief Declare the HTTP transport that the API groups of one `Llm` share.
+ * @brief Declare the HTTP transport that the API groups of one `OpenAI` client share.
  */
 #pragma once
 
@@ -9,10 +9,10 @@
 #include <drogon/utils/coroutine.h>
 #include <json/value.h>
 
-#include "drogon_llm/error.hpp"
-#include "drogon_llm/llm_client.hpp"
+#include "drogon_openai/error.hpp"
+#include "drogon_openai/openai_client.hpp"
 
-namespace drogon_llm::details {
+namespace drogon_openai::details {
 
     /**
      * @brief Send authenticated JSON requests to one OpenAI-format endpoint.
@@ -27,13 +27,13 @@ namespace drogon_llm::details {
          * @brief Store the endpoint settings and split `config.base_url`.
          * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
          */
-        explicit Transport(LlmConfig config);
+        explicit Transport(OpenAIConfig config);
 
         /**
          * @brief Return the endpoint settings.
          * @return Settings passed to the constructor.
          */
-        [[nodiscard]] auto Config() const noexcept -> LlmConfig const&;
+        [[nodiscard]] auto Config() const noexcept -> OpenAIConfig const&;
 
         /**
          * @brief POST a JSON body and await the JSON response.
@@ -50,9 +50,9 @@ namespace drogon_llm::details {
         ) const -> drogon::Task<Result<Json::Value>>;
 
     private:
-        LlmConfig m_config;        ///< Endpoint settings.
+        OpenAIConfig m_config;     ///< Endpoint settings.
         std::string m_host;        ///< Scheme, host, and port of `base_url`, for `HttpClient::newHttpClient()`.
         std::string m_path_prefix; ///< Path part of `base_url`, e.g. `/v1`; empty without one.
     };
 
-} // namespace drogon_llm::details
+} // namespace drogon_openai::details

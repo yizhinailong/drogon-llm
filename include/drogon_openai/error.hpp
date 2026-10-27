@@ -7,7 +7,7 @@
 #include <expected>
 #include <string>
 
-namespace drogon_llm {
+namespace drogon_openai {
 
     /**
      * @brief Category of a failed request, after the OpenAI Python SDK's exception classes.
@@ -36,4 +36,4 @@ namespace drogon_llm {
     template <typename T>
     using Result = std::expected<T, Error>;
 
-} // namespace drogon_llm
+} // namespace drogon_openai

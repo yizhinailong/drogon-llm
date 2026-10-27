@@ -1,6 +1,6 @@
 /**
  * @file transport.cpp
- * @brief Implement the HTTP connection that the API groups of one `Llm` share.
+ * @brief Implement the HTTP connection that the API groups of one `OpenAI` client share.
  */
 #include "details/transport.hpp"
 
@@ -61,13 +61,13 @@ namespace {
 
 } // namespace
 
-namespace drogon_llm::details {
+namespace drogon_openai::details {
 
     /**
      * @brief Store the endpoint settings and split `config.base_url`.
      * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
      */
-    Transport::Transport(LlmConfig config)
+    Transport::Transport(OpenAIConfig config)
         : m_config{ std::move(config) } {
         std::tie(m_host, m_path_prefix) = split_base_url(m_config.base_url);
     }
@@ -76,7 +76,7 @@ namespace drogon_llm::details {
      * @brief Return the endpoint settings.
      * @return Settings passed to the constructor.
      */
-    auto Transport::Config() const noexcept -> LlmConfig const& {
+    auto Transport::Config() const noexcept -> OpenAIConfig const& {
         return m_config;
     }
 
@@ -132,4 +132,4 @@ namespace drogon_llm::details {
         co_return *json;
     }
 
-} // namespace drogon_llm::details
+} // namespace drogon_openai::details
