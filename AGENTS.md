@@ -113,3 +113,5 @@ The workflows are copies of `../drogon-onebot`'s, which follow `yizhinailong/mcr
 New C++ code follows the `cpp-style-ref` skill (CMake + vcpkg variant), the same as `../assistantbot`: types and public methods PascalCase, private members `m_`, namespaces lowercase, `/** @file ... @brief ... */` at the top of every file, Doxygen blocks repeated on out-of-line definitions, `T const&`, brace initialization, and trailing return types. Drogon's virtual overrides (`initAndStart`, `shutdown`) keep their upstream names.
 
 Format with `clang-format -i <files>` (root `.clang-format`, same as `../assistantbot`). Check with `clang-format --dry-run -Werror <files>`.
+
+`.clang-format` sets `LineEnding: LF`, so the dry run flags every line of a CRLF file. `.gitattributes` (`* text=auto eol=lf`) overrides `core.autocrlf` and checks every file out with LF, Windows included. A working tree from before `.gitattributes` keeps its CRLF files until they are converted or checked out again.
