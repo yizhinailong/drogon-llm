@@ -6,7 +6,7 @@ A plugin library for OpenAI-format APIs, built on [drogon](https://github.com/dr
 
 The API follows the `AsyncOpenAI` client of the [OpenAI Python SDK](https://github.com/openai/openai-python): `co_await client.chat.completions.Create(...)` returns `drogon::Task<Result<ChatCompletion>>`, where `Result<T>` is `std::expected<T, Error>`. Chat completions are implemented so far; streaming is not supported yet.
 
-[Quick start](#quick-start) · [Documentation index](docs/en/README.md) · [Plugin guide](docs/en/drogon-plugin.md) · [Version tags and Linux CI](docs/en/ci.md) · [Doxygen guide](docs/en/doxygen.md)
+[Quick start](#quick-start) · [Documentation index](docs/en/README.md) · [Plugin guide](docs/en/drogon-plugin.md) · [Version tags, CI, and releases](docs/en/ci.md) · [Doxygen guide](docs/en/doxygen.md)
 
 ## Requirements
 
@@ -18,12 +18,13 @@ The API follows the `AsyncOpenAI` client of the [OpenAI Python SDK](https://gith
 | [vcpkg](https://github.com/microsoft/vcpkg) | Classic mode | Provides drogon; `VCPKG_ROOT` must be set |
 | drogon | 1.9.13 | Installed by vcpkg; `just init` runs `vcpkg install drogon` |
 
-[Linux CI](.github/workflows/linux-ci.yml) runs a debug and a release configuration on Ubuntu 24.04:
+[Linux CI](.github/workflows/linux-ci.yml) and [Windows CI](.github/workflows/windows-ci.yml) each run a debug and a release configuration, on Ubuntu 24.04 and Windows Server 2025:
 
-- Tools: CMake 4.2.3 and LLVM 21, with vcpkg pinned to the commit that provides drogon 1.9.13.
-- Steps: check the formatting, build, and run the offline tests.
+- Tools: CMake 4.2.3, LLVM 21 on Linux and the runner image's LLVM on Windows, with vcpkg pinned to the commit that provides drogon 1.9.13.
+- Steps: check the formatting (on Linux), build, and run the offline tests.
+- On a version tag, the [Release](.github/workflows/release.yml) workflow runs both and publishes their release builds as a GitHub Release.
 
-See [Version tags and Linux CI](docs/en/ci.md).
+See [Version tags, CI, and releases](docs/en/ci.md).
 
 <a id="quick-start"></a>
 
@@ -56,6 +57,7 @@ target_link_libraries(app PRIVATE drogon-openai::drogon-openai)
 - `GIT_TAG` can also name a version tag. When `VERSION` in the `project()` call of `CMakeLists.txt` changes, a `v<VERSION>` tag is created automatically.
 - As a subproject, the tests and install rules are off by default.
 - Alternatively, run `just publish` first, then use `find_package(drogon-openai CONFIG REQUIRED)` in the consuming project.
+- Each version also has prebuilt Linux and Windows packages of the release build on its GitHub Release. Extract one and add it to `CMAKE_PREFIX_PATH` for `find_package`; drogon still comes from vcpkg. See the Releases section of [Version tags, CI, and releases](docs/en/ci.md) for the requirements.
 
 Register the plugin in the app's config.json. This example connects to DeepSeek, and the API key is read only from an environment variable:
 
