@@ -6,7 +6,6 @@
  * takes a few seconds. Without the variable it exits with `SKIP_RETURN_CODE`, which CTest
  * reports as skipped, so CI never calls DeepSeek.
  */
-#include <cstdlib>
 #include <print>
 #include <string>
 #include <utility>
@@ -33,8 +32,7 @@ namespace {
      * @return The key, or empty when `API_KEY_ENV` is unset.
      */
     auto read_api_key() -> std::string {
-        char const* value{ std::getenv(API_KEY_ENV) };
-        return value != nullptr ? value : "";
+        return test_support::get_env(API_KEY_ENV);
     }
 
     /**

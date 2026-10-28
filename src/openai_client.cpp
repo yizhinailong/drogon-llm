@@ -4,15 +4,40 @@
  */
 #include "drogon_openai/openai_client.hpp"
 
+#include <cstddef>
 #include <cstdlib>
 #include <format>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 #include "details/transport.hpp"
 
 namespace {
+
+    /**
+     * @brief Read an environment variable of this process.
+     *
+     * Windows uses `_dupenv_s`, which returns a copy, because the UCRT deprecates `getenv`.
+     *
+     * @param name Variable name.
+     * @return The variable's value, or an empty string when it is unset.
+     */
+    auto read_env(char const* name) -> std::string {
+#ifdef _WIN32
+        char* buffer{ nullptr };
+        std::size_t size{ 0 };
+        if (_dupenv_s(&buffer, &size, name) != 0 || buffer == nullptr) {
+            return {};
+        }
+        std::unique_ptr<char, decltype(&std::free)> const owner{ buffer, &std::free };
+        return std::string{ buffer };
+#else
+        char const* value{ std::getenv(name) };
+        return value != nullptr ? value : "";
+#endif
+    }
 
     /**
      * @brief Read the API key from the named environment variable.
@@ -24,8 +49,8 @@ namespace {
         if (env_name.empty()) {
             return {};
         }
-        char const* value{ std::getenv(env_name.c_str()) };
-        if (value == nullptr || *value == '\0') {
+        std::string value{ read_env(env_name.c_str()) };
+        if (value.empty()) {
             throw std::invalid_argument{ std::format("drogon_openai::OpenAIClient: environment variable {} is unset or empty", env_name) };
         }
         return value;

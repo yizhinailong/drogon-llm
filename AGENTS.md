@@ -104,6 +104,7 @@ The workflows are copies of `../drogon-onebot`'s, which follow `yizhinailong/mcr
 ## Build notes
 
 - Requires CMake >= 4.0, Ninja, and ccache (hard-wired as `CMAKE_CXX_COMPILER_LAUNCHER`). Compiler is `clang++` on Linux, `clang-cl` on Windows.
+- The UCRT deprecates `getenv`, and clang-cl warns about every call. Read environment variables with `read_env` in `src/openai_client.cpp` or `test_support::get_env` in the tests. Both use `_dupenv_s` on Windows and `getenv` elsewhere.
 - Don't set `CMAKE_CXX_STANDARD` here. The library declares `target_compile_features(PUBLIC cxx_std_23)` (the public headers use `std::expected`), which is exported to `find_package` consumers. A parent project's `CMAKE_CXX_STANDARD` still applies in `add_subdirectory` mode, so under a C++26 parent the library builds with `-std=gnu++26`. The test executables add `cxx_std_23` for `<print>`.
 - Drogon 1.9.13's `FindFilesystem.cmake` (run by `find_package(Drogon)`) leaves an unset `CMAKE_CXX_STANDARD` defined as `""`, and `target_compile_features` then fails with `CXX_STANDARD property ... contained an invalid value: ""`. Both `CMakeLists.txt` and `cmake/drogon-openai-config.cmake.in` unset the empty value right after finding Drogon. Keep those blocks.
 - Sources and public headers are collected with `file(GLOB_RECURSE ... CONFIGURE_DEPENDS)`, so adding a file triggers a re-configure on the next build.

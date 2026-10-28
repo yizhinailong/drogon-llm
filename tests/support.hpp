@@ -5,9 +5,12 @@
 #pragma once
 
 #include <chrono>
+#include <cstddef>
 #include <cstdlib>
 #include <fstream>
 #include <future>
+#include <memory>
+#include <string>
 #include <string_view>
 #include <thread>
 
@@ -23,6 +26,29 @@ namespace test_support {
     constexpr char const* MODEL{ "fake-model" };                       ///< `model` in config.json.
     constexpr char const* API_KEY_ENV{ "DROGON_OPENAI_TEST_API_KEY" }; ///< `api_key_env` in config.json.
     constexpr char const* API_KEY{ "drogon-openai-test-key" };         ///< Value that the tests give `API_KEY_ENV`.
+
+    /**
+     * @brief Read an environment variable of this process.
+     *
+     * Windows uses `_dupenv_s`, which returns a copy, because the UCRT deprecates `getenv`.
+     *
+     * @param name Variable name.
+     * @return The variable's value, or an empty string when it is unset.
+     */
+    inline auto get_env(char const* name) -> std::string {
+#ifdef _WIN32
+        char* buffer{ nullptr };
+        std::size_t size{ 0 };
+        if (_dupenv_s(&buffer, &size, name) != 0 || buffer == nullptr) {
+            return {};
+        }
+        std::unique_ptr<char, decltype(&std::free)> const owner{ buffer, &std::free };
+        return std::string{ buffer };
+#else
+        char const* value{ std::getenv(name) };
+        return value != nullptr ? value : "";
+#endif
+    }
 
     /**
      * @brief Set an environment variable of this process.
