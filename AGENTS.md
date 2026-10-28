@@ -50,6 +50,7 @@ The tests use drogon's own framework, `drogon/drogon_test.h`, which is installed
 
 - The fake endpoints in `test_chat_completions` record each request in `g_last_request` on the IO thread before answering, so a test reads its own request after `sync_wait` returns. Path prefixes select the fake's behavior (`/minimal`, `/unauthorized`, `/slow`, ...), and each successful endpoint uses its own completion `id`, so a test can tell which one answered.
 - `ConcurrentRequestsDoNotQueue` sends two requests to `/slow` (1 s each) from two threads and requires them to finish within 1.8 s. `CreateResumesOnCallingThread` calls `Create` from a coroutine handler on the IO thread and compares `std::this_thread::get_id()` before and after the `co_await`. Each fails when the transport shares one client, or always uses the main loop, respectively.
+- `CreateUnreachableIsConnectionError` connects to `127.0.0.1:1` with a 10 s timeout. Windows retries a refused connect for about 2 s before it reports the failure, so a timeout of 2 s or less yields `Timeout` there instead of `Connection`. On Linux the connect fails immediately.
 - `ctest --preset linux-debug -LE live` runs only the offline tests.
 
 ## Commands

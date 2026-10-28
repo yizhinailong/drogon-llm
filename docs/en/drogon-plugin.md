@@ -137,6 +137,7 @@ Each `ErrorKind` corresponds to an exception class of the OpenAI Python SDK:
 
 - The `message` of a `Status` error looks like `HTTP 401: <error.message>`. When the response body is not an OpenAI-format error, the raw body takes the place of `error.message`.
 - The `message` of a `Connection` or `Timeout` error looks like `POST <base_url>/chat/completions: <the reason drogon gives>`.
+- On Windows, a refused connection takes about 2 seconds to report, because the system retries the connect first. With a `timeout` shorter than that, the request fails with `Timeout` instead of `Connection`. On Linux, a refused connection fails immediately.
 - Failed requests are not retried automatically.
 
 ## Threads and event loops

@@ -474,9 +474,11 @@ DROGON_TEST(CreateUnreachableIsConnectionError) {
         .base_url = "http://127.0.0.1:1",
         .model = test_support::MODEL,
     } };
+    // Windows retries a refused connect for about 2 s before reporting it, so a
+    // shorter timeout would make this a Timeout instead of a Connection error.
     auto const result{ drogon::sync_wait(client.chat.completions.Create({
         .messages = { { .role = "user", .content = "Hello!" } },
-        .timeout = 2.0,
+        .timeout = 10.0,
     })) };
     REQUIRE(!result.has_value());
     CHECK(result.error().kind == drogon_openai::ErrorKind::Connection);

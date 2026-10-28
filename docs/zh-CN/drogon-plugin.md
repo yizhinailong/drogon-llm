@@ -137,6 +137,7 @@ app().quit()                              drogon 调用 OpenAIClient::shutdown()
 
 - `Status` 的 `message` 形如 `HTTP 401: <error.message>`。响应体不是 OpenAI 格式的错误时，用原始响应体代替 `error.message`。
 - `Connection` 和 `Timeout` 的 `message` 形如 `POST <base_url>/chat/completions: <drogon 给出的原因>`。
+- 在 Windows 上，连接被拒要约 2 秒才报告，因为系统会先重试连接。`timeout` 比这更短时，请求会以 `Timeout` 而不是 `Connection` 失败。Linux 上连接被拒会立即失败。
 - 失败的请求不会自动重试。
 
 ## 线程与事件循环
