@@ -25,6 +25,8 @@ Early-stage Drogon plugin library for OpenAI-compatible APIs: OpenAI itself, or 
 - WebSocketSession shares one connection across copies. It owns frame bytes, bounds unread data to 16 MiB, allows only one pending receive, and marshals completion to each awaiter's loop. Receive(timeout=0) has no deadline; a receive timeout leaves the session usable. Send success means queued bytes. Close and release sessions before stopping drogon. Drogon 1.9.13 discards non-101 WebSocket handshake responses, so rejection is Connection without HTTP metadata; there is no automatic reconnect/replay.
 - Webhook verification uses OpenSSL::Crypto HMAC-SHA256, constant-time comparison, the original payload bytes and a default 300-second replay window; invalid signatures use ErrorKind::InvalidWebhookSignature. CMake and the installed package find OpenSSL Crypto explicitly (provided by Drogon's vcpkg dependencies).
 
+- `http_trace.hpp` provides owned, bounded HTTP attempt diagnostics. Set `OpenAIConfig::http_trace` programmatically or override it with `WithOptions`; callbacks run on request loops, may be concurrent, and must not block. Exceptions are ignored. Each attempt records failures/retries and at most 64 KiB per body with UTF-8 boundaries; the configured bearer credential is redacted, headers are excluded, and consumers must sanitize other payload data. `test_client` covers retries, failures, truncation, redaction, observer isolation, and throwing callbacks.
+
 ## Consuming the library
 
 The library supports two ways to consume it. Keep both working when you change `CMakeLists.txt`.
