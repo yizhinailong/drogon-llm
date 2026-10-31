@@ -117,6 +117,30 @@ DROGON_TEST(ModelsDeleteContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(EmbeddingsCreateContract) {
+    // SDK contract: embeddings.create.
+    types::embeddings::EmbeddingCreateParams params;
+    params.input = json(R"JSON({"vendor":"value"})JSON");
+    params.model = "value";
+    params.dimensions = 7;
+    params.encoding_format = "value";
+    params.user = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[],"model":"resource","object":"resource","usage":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().embeddings.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/embeddings");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.

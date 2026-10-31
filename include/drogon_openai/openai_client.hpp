@@ -11,6 +11,7 @@
 #include <drogon/plugins/Plugin.h>
 
 #include "drogon_openai/details/chat.hpp"
+#include "drogon_openai/details/embeddings.hpp"
 #include "drogon_openai/details/models.hpp"
 #include "drogon_openai/error.hpp"
 #include "drogon_openai/pagination.hpp"
@@ -74,8 +75,9 @@ namespace drogon_openai {
          */
         explicit OpenAI(OpenAIConfig config);
 
-        details::Chat chat;     ///< Chat API group.
-        details::Models models; ///< SDK models API group.
+        details::Chat chat;             ///< Chat API group.
+        details::Models models;         ///< SDK models API group.
+        details::Embeddings embeddings; ///< SDK embeddings API group.
 
         /**
          * @brief Copy this client with selected settings overridden.
