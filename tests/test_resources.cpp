@@ -532,6 +532,27 @@ DROGON_TEST(ConversationsItemsDeleteContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(ModerationsCreateContract) {
+    // SDK contract: moderations.create.
+    types::moderations::ModerationCreateParams params;
+    params.input = json(R"JSON({"vendor":"value"})JSON");
+    params.model = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","model":"resource","results":[],"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().moderations.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/moderations");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
