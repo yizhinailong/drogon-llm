@@ -1095,6 +1095,90 @@ DROGON_TEST(AudioVoicesDeleteContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(BatchesCreateContract) {
+    // SDK contract: batches.create.
+    types::batches::BatchCreateParams params;
+    params.completion_window = "value";
+    params.endpoint = "value";
+    params.input_file_id = "value";
+    params.metadata = json(R"JSON({"vendor":"value"})JSON");
+    params.output_expires_after = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","completion_window":"resource","created_at":7,"endpoint":"resource","input_file_id":"resource","object":"resource","status":"resource","cancelled_at":{},"cancelling_at":{},"completed_at":{},"error_file_id":{},"errors":{},"expired_at":{},"expires_at":{},"failed_at":{},"finalizing_at":{},"in_progress_at":{},"metadata":{},"model":{},"output_file_id":{},"request_counts":{},"usage":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().batches.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/batches");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(BatchesRetrieveContract) {
+    // SDK contract: batches.retrieve.
+    types::batches::BatchesRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","completion_window":"resource","created_at":7,"endpoint":"resource","input_file_id":"resource","object":"resource","status":"resource","cancelled_at":{},"cancelling_at":{},"completed_at":{},"error_file_id":{},"errors":{},"expired_at":{},"expires_at":{},"failed_at":{},"finalizing_at":{},"in_progress_at":{},"metadata":{},"model":{},"output_file_id":{},"request_counts":{},"usage":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().batches.Retrieve("batch_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/batches/batch_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(BatchesListContract) {
+    // SDK contract: batches.list.
+    types::batches::BatchListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","completion_window":"resource","created_at":7,"endpoint":"resource","input_file_id":"resource","object":"resource","status":"resource","cancelled_at":{},"cancelling_at":{},"completed_at":{},"error_file_id":{},"errors":{},"expired_at":{},"expires_at":{},"failed_at":{},"finalizing_at":{},"in_progress_at":{},"metadata":{},"model":{},"output_file_id":{},"request_counts":{},"usage":{},"provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().batches.List(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/batches");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(BatchesCancelContract) {
+    // SDK contract: batches.cancel.
+    types::batches::BatchesCancelParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","completion_window":"resource","created_at":7,"endpoint":"resource","input_file_id":"resource","object":"resource","status":"resource","cancelled_at":{},"cancelling_at":{},"completed_at":{},"error_file_id":{},"errors":{},"expired_at":{},"expires_at":{},"failed_at":{},"finalizing_at":{},"in_progress_at":{},"metadata":{},"model":{},"output_file_id":{},"request_counts":{},"usage":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().batches.Cancel("batch_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/batches/batch_id-value/cancel");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.

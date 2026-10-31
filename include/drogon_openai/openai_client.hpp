@@ -11,6 +11,7 @@
 #include <drogon/plugins/Plugin.h>
 
 #include "drogon_openai/details/audio.hpp"
+#include "drogon_openai/details/batches.hpp"
 #include "drogon_openai/details/chat.hpp"
 #include "drogon_openai/details/conversations.hpp"
 #include "drogon_openai/details/embeddings.hpp"
@@ -94,6 +95,7 @@ namespace drogon_openai {
         details::Uploads uploads;             ///< SDK uploads API group.
         details::Images images;               ///< SDK images API group.
         details::Audio audio;                 ///< SDK audio API group.
+        details::Batches batches;             ///< SDK batches API group.
 
         /**
          * @brief Copy this client with selected settings overridden.
