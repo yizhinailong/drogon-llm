@@ -71,7 +71,7 @@ namespace drogon_openai {
      * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
      */
     OpenAI::OpenAI(OpenAIConfig config)
-        : m_transport{ std::make_shared<details::Transport>(std::move(config)) }, chat{ m_transport }, models{ m_transport }, embeddings{ m_transport }, completions{ m_transport }, responses{ m_transport }, conversations{ m_transport }, moderations{ m_transport }, files{ m_transport }, uploads{ m_transport }, images{ m_transport }, audio{ m_transport }, batches{ m_transport }, vector_stores{ m_transport }, webhooks{ m_transport }, realtime{ m_transport }, live{ m_transport }, fine_tuning{ m_transport }, evals{ m_transport }, containers{ m_transport }, videos{ m_transport } {}
+        : m_transport{ std::make_shared<details::Transport>(std::move(config)) }, chat{ m_transport }, models{ m_transport }, embeddings{ m_transport }, completions{ m_transport }, responses{ m_transport }, conversations{ m_transport }, moderations{ m_transport }, files{ m_transport }, uploads{ m_transport }, images{ m_transport }, audio{ m_transport }, batches{ m_transport }, vector_stores{ m_transport }, webhooks{ m_transport }, realtime{ m_transport }, live{ m_transport }, fine_tuning{ m_transport }, evals{ m_transport }, containers{ m_transport }, videos{ m_transport }, skills{ m_transport } {}
 
     /**
      * @brief Copy this client with selected settings overridden.

@@ -2947,6 +2947,231 @@ DROGON_TEST(VideosRemixContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(SkillsContentRetrieveContract) {
+    // SDK contract: skills.content.retrieve.
+    types::skills::SkillsContentRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = true;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.content.Retrieve("skill_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills/skill_id-value/content");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "application/binary");
+    CHECK(result->parsed == std::string("byte\0data", 9));
+}
+
+DROGON_TEST(SkillsCreateContract) {
+    // SDK contract: skills.create.
+    types::skills::SkillCreateParams params;
+    params.files = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"default_version":"resource","description":"resource","latest_version":"resource","name":"resource","object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
+DROGON_TEST(SkillsRetrieveContract) {
+    // SDK contract: skills.retrieve.
+    types::skills::SkillsRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"default_version":"resource","description":"resource","latest_version":"resource","name":"resource","object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.Retrieve("skill_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills/skill_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(SkillsUpdateContract) {
+    // SDK contract: skills.update.
+    types::skills::SkillUpdateParams params;
+    params.default_version = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"default_version":"resource","description":"resource","latest_version":"resource","name":"resource","object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.Update("skill_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills/skill_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(SkillsListContract) {
+    // SDK contract: skills.list.
+    types::skills::SkillListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"default_version":"resource","description":"resource","latest_version":"resource","name":"resource","object":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.List(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(SkillsDeleteContract) {
+    // SDK contract: skills.delete.
+    types::skills::SkillsDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","deleted":true,"object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.Delete("skill_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills/skill_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(SkillsVersionsContentRetrieveContract) {
+    // SDK contract: skills.versions.content.retrieve.
+    types::skills::SkillsVersionsContentRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = true;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.versions.content.Retrieve("version-value", "skill_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills/skill_id-value/versions/version-value/content");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "application/binary");
+    CHECK(result->parsed == std::string("byte\0data", 9));
+}
+
+DROGON_TEST(SkillsVersionsCreateContract) {
+    // SDK contract: skills.versions.create.
+    types::skills::VersionCreateParams params;
+    params.default_ = true;
+    params.files = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"description":"resource","name":"resource","object":"resource","skill_id":"resource","version":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.versions.Create("skill_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills/skill_id-value/versions");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
+DROGON_TEST(SkillsVersionsRetrieveContract) {
+    // SDK contract: skills.versions.retrieve.
+    types::skills::SkillsVersionsRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"description":"resource","name":"resource","object":"resource","skill_id":"resource","version":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.versions.Retrieve("version-value", "skill_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills/skill_id-value/versions/version-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(SkillsVersionsListContract) {
+    // SDK contract: skills.versions.list.
+    types::skills::VersionListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"description":"resource","name":"resource","object":"resource","skill_id":"resource","version":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.versions.List("skill_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills/skill_id-value/versions");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(SkillsVersionsDeleteContract) {
+    // SDK contract: skills.versions.delete.
+    types::skills::SkillsVersionsDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","deleted":true,"object":"resource","version":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().skills.versions.Delete("version-value", "skill_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/skills/skill_id-value/versions/version-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.

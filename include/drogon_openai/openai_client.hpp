@@ -25,6 +25,7 @@
 #include "drogon_openai/details/moderations.hpp"
 #include "drogon_openai/details/realtime.hpp"
 #include "drogon_openai/details/responses.hpp"
+#include "drogon_openai/details/skills.hpp"
 #include "drogon_openai/details/text_completions.hpp"
 #include "drogon_openai/details/uploads.hpp"
 #include "drogon_openai/details/vector_stores.hpp"
@@ -112,6 +113,7 @@ namespace drogon_openai {
         details::Evals evals;                 ///< SDK evals API group.
         details::Containers containers;       ///< SDK containers API group.
         details::Videos videos;               ///< SDK videos API group.
+        details::Skills skills;               ///< SDK skills API group.
 
         /**
          * @brief Copy this client with selected settings overridden.
