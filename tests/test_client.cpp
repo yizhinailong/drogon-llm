@@ -194,6 +194,40 @@ DROGON_TEST(DefaultsOverridesAndClientCopies) {
     CHECK(base.Config().timeout.write == 600.0);
 }
 
+DROGON_TEST(GenericMethodsRawAndBinary) {
+    Json::Value body;
+    body["hello"] = "world";
+    for (auto const& method : { "GET", "POST", "PUT", "PATCH", "DELETE" }) {
+        auto result{ drogon::sync_wait(client().Request(method, "/echo", body)) };
+        REQUIRE(result.has_value());
+        CHECK((*result)["method"] == method);
+        CHECK(!(*result)["body"].asString().empty());
+    }
+    REQUIRE(drogon::sync_wait(client().Post("echo", body)).has_value());
+    REQUIRE(drogon::sync_wait(client().Put("echo", body)).has_value());
+    REQUIRE(drogon::sync_wait(client().Patch("echo", body)).has_value());
+    REQUIRE(drogon::sync_wait(client().Delete("echo")).has_value());
+    auto raw{ drogon::sync_wait(client().RequestRaw("GET", "echo")) };
+    REQUIRE(raw.has_value());
+    CHECK(raw->request_id == "req-client");
+    CHECK(raw->headers.at("x-ratelimit-remaining-requests") == "42");
+    CHECK(raw->parsed["method"] == "GET");
+    CHECK(raw->status_code == 200);
+    CHECK(!raw->body.empty());
+    auto binary{ drogon::sync_wait(client().GetBinary("binary")) };
+    REQUIRE(binary.has_value());
+    CHECK(binary->parsed == std::string("\0\xff\x01hello", 8));
+    CHECK(binary->body == binary->parsed);
+    CHECK(binary->request_id == "req-binary");
+    auto empty{ drogon::sync_wait(client().Get("empty")) };
+    REQUIRE(empty.has_value());
+    CHECK(empty->isNull());
+    auto invalid{ drogon::sync_wait(client().Get("bad-json")) };
+    REQUIRE(!invalid.has_value());
+    CHECK(invalid.error().kind == drogon_openai::ErrorKind::ResponseValidation);
+    CHECK(invalid.error().request_id == "req-invalid");
+}
+
 DROGON_TEST(RetriesHonorStatusAndOverrides) {
     for (auto const& code : { "408", "409", "429", "500", "503" }) {
         auto result{ drogon::sync_wait(client().Get("echo", { .extra_headers = { { "x-test-status", code }, { "x-test-eventual", "true" } } })) };
@@ -265,6 +299,20 @@ DROGON_TEST(TimeoutDefaultsCanBeOverriddenAndRetried) {
     REQUIRE(!retried.has_value());
     CHECK(retried.error().kind == drogon_openai::ErrorKind::Timeout);
     CHECK(g_slow_requests == 2);
+}
+
+DROGON_TEST(MultipartPreservesBinaryAndFields) {
+    auto response{ drogon::sync_wait(client().PostMultipart("upload", {
+                                                                          { .name = "purpose", .content = "fine-tune" },
+                                                                          { .name = "file", .content = std::string{ "A\0B\xff", 4 }, .filename = "data.bin", .content_type = "application/octet-stream" },
+                                                                      })) };
+    REQUIRE(response.has_value());
+    CHECK((*response)["valid"] == true);
+    CHECK((*response)["purpose"] == "fine-tune");
+    REQUIRE((*response)["files"].size() == 1);
+    CHECK((*response)["files"][0]["name"] == "data.bin");
+    CHECK((*response)["files"][0]["field"] == "file");
+    CHECK((*response)["files"][0]["bytes"] == "QQBC/w==");
 }
 
 DROGON_TEST(StatusPredicatesAndInvalidOptions) {

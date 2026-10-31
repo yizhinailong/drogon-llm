@@ -178,6 +178,30 @@ namespace drogon_openai {
             Json::Value body = {},
             RequestOptions options = {}
         ) const -> drogon::Task<Result<RawResponse<Json::Value>>>;
+
+        /**
+         * @brief GET binary content without interpreting it as JSON.
+         * @param path API path.
+         * @param options Request overrides.
+         * @return Response bytes and metadata or an error.
+         */
+        [[nodiscard]] auto GetBinary(
+            std::string path,
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<RawResponse<std::string>>>;
+
+        /**
+         * @brief POST multipart form fields and files.
+         * @param path API path.
+         * @param parts Form fields and files, in order.
+         * @param options Request overrides.
+         * @return Parsed JSON response or an error.
+         */
+        [[nodiscard]] auto PostMultipart(
+            std::string path,
+            std::vector<MultipartPart> parts,
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<Json::Value>>;
     };
 
     /**

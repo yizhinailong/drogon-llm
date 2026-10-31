@@ -271,6 +271,84 @@ namespace drogon_openai {
     }
 
     /**
+     * @brief GET binary content without interpreting it as JSON.
+     * @param path API path.
+     * @param options Request overrides.
+     * @return Response bytes and metadata or an error.
+     */
+    auto OpenAI::GetBinary(
+        std::string path,
+        RequestOptions options
+    ) const -> drogon::Task<Result<RawResponse<std::string>>> {
+        auto const transport{ m_transport };
+        co_return co_await transport->Send("GET", std::move(path), "", "", std::move(options));
+    }
+
+    /**
+     * @brief POST multipart form fields and files.
+     * @param path API path.
+     * @param parts Form fields and files, in order.
+     * @param options Request overrides.
+     * @return Parsed JSON response or an error.
+     */
+    auto OpenAI::PostMultipart(
+        std::string path,
+        std::vector<MultipartPart> parts,
+        RequestOptions options
+    ) const -> drogon::Task<Result<Json::Value>> {
+        auto const transport{ m_transport };
+        auto const boundary{ "drogon-openai-" + drogon::utils::genRandomString(32) };
+        std::string body;
+        for (auto const& part : parts) {
+            auto quote{ [](std::string const& value) {
+                std::string escaped;
+                for (char c : value) {
+                    if (c == '"') {
+                        escaped += "%22";
+                    } else if (c == '\r') {
+                        escaped += "%0D";
+                    } else if (c == '\n') {
+                        escaped += "%0A";
+                    } else if (c == '\\') {
+                        escaped += "\\\\";
+                    } else {
+                        escaped += c;
+                    }
+                }
+                return escaped;
+            } };
+            if (part.name.find('\0') != std::string::npos || (part.filename && part.filename->find('\0') != std::string::npos) || (part.content_type && (part.content_type->find_first_of("\r\n") != std::string::npos || part.content_type->find('\0') != std::string::npos))) {
+                co_return std::unexpected{ Error{ .kind = ErrorKind::InvalidRequest, .message = "invalid multipart disposition or media type" } };
+            }
+            body += "--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + quote(part.name) + "\"";
+            if (part.filename) {
+                body += "; filename=\"" + quote(*part.filename) + "\"";
+            }
+            body += "\r\n";
+            if (part.content_type || part.filename) {
+                body += "Content-Type: " + part.content_type.value_or("application/octet-stream") + "\r\n";
+            }
+            body += "\r\n";
+            body += part.content;
+            body += "\r\n";
+        }
+        body += "--" + boundary + "--\r\n";
+        auto response{ co_await transport->Send("POST", std::move(path), std::move(body), "multipart/form-data; boundary=" + boundary, std::move(options)) };
+        if (!response) {
+            co_return std::unexpected{ response.error() };
+        }
+        auto parsed{ details::decode_json(response->body) };
+        if (!parsed) {
+            auto error{ parsed.error() };
+            error.headers = response->headers;
+            error.request_id = response->request_id;
+            error.status_code = response->status_code;
+            co_return std::unexpected{ std::move(error) };
+        }
+        co_return std::move(*parsed);
+    }
+
+    /**
      * @brief Read the endpoint settings from the plugin's `config` object.
      * @param config The plugin's `config` object from config.json.
      * @throws std::invalid_argument If `base_url` or `model` is missing or empty,
