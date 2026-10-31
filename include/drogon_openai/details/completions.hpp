@@ -50,6 +50,15 @@ namespace drogon_openai::details {
         [[nodiscard]] auto CreateRaw(
             ChatCompletionCreateParams params
         ) const -> drogon::Task<Result<RawResponse<ChatCompletion>>>;
+
+        /**
+         * @brief Generate structured JSON output and decode strict function tool arguments.
+         * @param params Owned request fields, schema, strict tools, and HTTP overrides.
+         * @return Parsed completion, or validation, finish-reason, or request error.
+         */
+        [[nodiscard]] auto Parse(
+            ChatCompletionCreateParams params
+        ) const -> drogon::Task<Result<ChatCompletion>>;
     };
 
 } // namespace drogon_openai::details

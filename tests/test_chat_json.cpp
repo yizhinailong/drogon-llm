@@ -159,6 +159,58 @@ DROGON_TEST(ResponsesRetainAllFieldsAndCanRoundTripMessages) {
     CHECK(chat_json::to_request_body(params, "model")["messages"][0]["content"] == params.messages[0].content);
 }
 
+DROGON_TEST(StructuredParsingAndValidationFailures) {
+    auto completion{ chat_json::parse_chat_completion(full_completion()).value() };
+    ChatCompletionCreateParams params;
+    params.response_format = json(R"JSON({"type":"json_schema","json_schema":{"name":"reply","schema":{"type":"object"}}})JSON");
+    params.tools = std::vector<ChatCompletionToolParam>{ { .function = json(R"JSON({"name":"weather","strict":true})JSON") } };
+    auto parsed{ chat_json::parse_structured(completion, params) };
+    REQUIRE(parsed.has_value());
+    CHECK((*completion.choices[0].message.parsed)["answer"] == 42);
+    CHECK((*completion.choices[0].message.tool_calls->at(0).function.parsed_arguments)["city"] == "Paris");
+    for (auto const* finish : { "length", "content_filter" }) {
+        completion.choices[0].finish_reason = finish;
+        parsed = chat_json::parse_structured(completion, params);
+        REQUIRE(!parsed.has_value());
+        CHECK(parsed.error().kind == (std::string{ finish } == "length" ? ErrorKind::LengthFinishReason : ErrorKind::ContentFilterFinishReason));
+    }
+    completion.choices[0].finish_reason = "stop";
+    completion.choices[0].message.content = "{invalid";
+    REQUIRE(!chat_json::parse_structured(completion, params));
+    completion.choices[0].message.refusal = "declined";
+    REQUIRE(chat_json::parse_structured(completion, params));
+    CHECK(!completion.choices[0].message.parsed.has_value());
+    params.tools->at(0).function["strict"] = false;
+    REQUIRE(!chat_json::validate_parse_tools(params));
+    params.tools->at(0).type = "custom";
+    REQUIRE(!chat_json::validate_parse_tools(params));
+    params.tools.reset();
+    completion.choices[0].message.refusal.reset();
+    completion.choices[0].message.content = "{\"answer\":42}";
+    params.schema_validator = [](auto const& value, auto const& schema) -> Result<void> {
+        if (value["answer"] != 42 || schema["type"] != "object") {
+            throw std::runtime_error{ "schema mismatch" };
+        }
+        return {};
+    };
+    REQUIRE(chat_json::parse_structured(completion, params));
+    params.schema_validator = [](auto const&, auto const&) -> Result<void> {
+        throw std::runtime_error{ "invalid schema value" };
+    };
+    auto failure{ chat_json::parse_structured(completion, params) };
+    REQUIRE(!failure);
+    CHECK(failure.error().kind == ErrorKind::ResponseValidation);
+    for (auto const* invalid : { "{\"x\":1,}", "/*comment*/{}", "{}garbage" }) {
+        CHECK(!chat_json::decode_json(invalid));
+    }
+    auto bad{ full_completion() };
+    bad["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"] = 5;
+    CHECK(!chat_json::parse_chat_completion(bad));
+    bad = full_completion();
+    bad["usage"]["prompt_tokens_details"]["cached_tokens"] = "bad";
+    CHECK(!chat_json::parse_chat_completion(bad));
+}
+
 /**
  * @brief Run serialization and decoding tests without starting an application.
  * @param argc Framework argument count.

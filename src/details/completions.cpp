@@ -142,4 +142,28 @@ namespace drogon_openai::details {
         co_return co_await create_raw(std::move(transport), std::move(params));
     }
 
+    /**
+     * @brief Generate structured JSON output and decode strict function tool arguments.
+     * @param params Owned request fields, schema, strict tools, and HTTP overrides.
+     * @return Parsed completion, or validation, finish-reason, or request error.
+     */
+    auto Completions::Parse(
+        ChatCompletionCreateParams params
+    ) const -> drogon::Task<Result<ChatCompletion>> {
+        auto transport{ m_transport };
+        auto valid{ validate_parse_tools(params) };
+        if (!valid) {
+            co_return std::unexpected{ std::move(valid.error()) };
+        }
+        auto response{ co_await create_raw(std::move(transport), params) };
+        if (!response) {
+            co_return std::unexpected{ std::move(response.error()) };
+        }
+        auto parsed{ parse_structured(response->parsed, params) };
+        if (!parsed) {
+            co_return std::unexpected{ response_error(std::move(parsed.error()), *response) };
+        }
+        co_return std::move(response->parsed);
+    }
+
 } // namespace drogon_openai::details
