@@ -11,7 +11,9 @@
 #include <drogon/utils/coroutine.h>
 
 #include "drogon_openai/error.hpp"
+#include "drogon_openai/pagination.hpp"
 #include "drogon_openai/types/chat.hpp"
+#include "drogon_openai/types/chat_management.hpp"
 
 namespace drogon_openai {
 
@@ -32,6 +34,34 @@ namespace drogon_openai::details {
     class Transport;
 
     /**
+     * @brief Messages API group below stored chat completions.
+     */
+    class CompletionMessages {
+    private:
+        std::shared_ptr<Transport> m_transport; ///< Shared immutable endpoint settings.
+
+    public:
+        /**
+         * @brief Bind the messages group to an endpoint.
+         * @param transport Shared HTTP transport.
+         */
+        explicit CompletionMessages(std::shared_ptr<Transport> transport);
+
+        /**
+         * @brief List the original messages of a stored completion.
+         * @param completion_id Stored completion ID, encoded as one path segment.
+         * @param params Cursor, page size, and order.
+         * @param options Per-request HTTP overrides, retained across pages.
+         * @return Typed page supporting manual and automatic traversal.
+         */
+        [[nodiscard]] auto List(
+            std::string completion_id,
+            ChatCompletionMessageListParams params = {},
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<Page<ChatCompletionStoreMessage>>>;
+    };
+
+    /**
      * @brief Chat completions API group, reached through `client.chat.completions`.
      */
     class Completions {
@@ -44,6 +74,8 @@ namespace drogon_openai::details {
          * @param transport Connection shared by the API groups of one `OpenAI` client.
          */
         explicit Completions(std::shared_ptr<Transport> transport);
+
+        CompletionMessages messages; ///< Messages belonging to stored completions.
 
         /**
          * @brief Generate a reply to a conversation.
@@ -88,6 +120,52 @@ namespace drogon_openai::details {
             ChatChunkCallback on_chunk = {},
             ChatEventCallback on_event = {}
         ) const -> drogon::Task<Result<ChatCompletion>>;
+
+        /**
+         * @brief Retrieve a completion created with `store: true`.
+         * @param completion_id Stored completion ID, encoded as one path segment.
+         * @param options Per-request HTTP overrides.
+         * @return Stored completion or a request/response error.
+         */
+        [[nodiscard]] auto Retrieve(
+            std::string completion_id,
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<ChatCompletion>>;
+
+        /**
+         * @brief Update the metadata of a stored completion.
+         * @param completion_id Stored completion ID, encoded as one path segment.
+         * @param params Metadata and additional body fields.
+         * @param options Per-request HTTP overrides.
+         * @return Updated completion or a request/response error.
+         */
+        [[nodiscard]] auto Update(
+            std::string completion_id,
+            ChatCompletionUpdateParams params,
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<ChatCompletion>>;
+
+        /**
+         * @brief Delete a stored completion and its stored messages.
+         * @param completion_id Stored completion ID, encoded as one path segment.
+         * @param options Per-request HTTP overrides.
+         * @return Deletion confirmation or a request/response error.
+         */
+        [[nodiscard]] auto Delete(
+            std::string completion_id,
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<ChatCompletionDeleted>>;
+
+        /**
+         * @brief List stored completions with optional filters.
+         * @param params Cursor, page size, metadata, model, and sort order.
+         * @param options Per-request HTTP overrides, retained across pages.
+         * @return Typed page supporting manual and automatic traversal.
+         */
+        [[nodiscard]] auto List(
+            ChatCompletionListParams params = {},
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<Page<ChatCompletion>>>;
     };
 
 } // namespace drogon_openai::details

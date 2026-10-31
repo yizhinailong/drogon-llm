@@ -147,6 +147,74 @@ namespace {
     }
 } // namespace
 
+DROGON_TEST(ChatRawStructuredAndStoredMethods) {
+    auto api{ client() };
+    auto raw{ drogon::sync_wait(api.chat.completions.CreateRaw({ .messages = { { .role = "user", .content = "hi" } } })) };
+    REQUIRE(raw);
+    CHECK(raw->headers.at("x-request-id") == "req-create");
+    CHECK(raw->parsed._request_id == "req-create");
+    ChatCompletionCreateParams params;
+    params.response_format = json(R"JSON({"type":"json_schema","json_schema":{"name":"answer","schema":{"type":"object"}}})JSON");
+    params.tools = std::vector<ChatCompletionToolParam>{ { .function = json(R"JSON({"name":"weather","strict":true})JSON") } };
+    auto parsed{ drogon::sync_wait(api.chat.completions.Parse(params)) };
+    REQUIRE(parsed);
+    CHECK((*parsed->choices[0].message.parsed)["answer"] == 42);
+    CHECK((*parsed->choices[0].message.tool_calls->at(0).function.parsed_arguments)["city"] == "Paris");
+    for (auto const* scenario : { "length", "content_filter", "bad" }) {
+        params.extra_body["scenario"] = scenario;
+        auto failure{ drogon::sync_wait(api.chat.completions.Parse(params)) };
+        REQUIRE(!failure);
+        CHECK(failure.error().request_id == "req-create");
+        CHECK(failure.error().kind == (std::string{ scenario } == "length" ? ErrorKind::LengthFinishReason : std::string{ scenario } == "content_filter" ? ErrorKind::ContentFilterFinishReason :
+                                                                                                                                                           ErrorKind::ResponseValidation));
+    }
+    params.tools->at(0).function["strict"] = false;
+    auto rejected{ drogon::sync_wait(api.chat.completions.Parse(params)) };
+    REQUIRE(!rejected);
+    CHECK(rejected.error().kind == ErrorKind::InvalidRequest);
+    auto retrieved{ drogon::sync_wait(api.chat.completions.Retrieve("id-1")) };
+    REQUIRE(retrieved);
+    CHECK(retrieved->id == "id-1");
+    auto updated{ drogon::sync_wait(api.chat.completions.Update("id-1", { .metadata = json(R"JSON({"tag":"updated"})JSON") })) };
+    REQUIRE(updated);
+    CHECK((*updated->metadata)["tag"] == "updated");
+    auto deleted{ drogon::sync_wait(api.chat.completions.Delete("id-1")) };
+    REQUIRE(deleted);
+    CHECK(deleted->deleted);
+    auto messages{ drogon::sync_wait(api.chat.completions.messages.List("id-1")) };
+    REQUIRE(messages);
+    CHECK(messages->data[0].role == "user");
+    CHECK(messages->data[0].content_parts->size() == 1);
+    CHECK(!messages->HasNextPage());
+}
+
+DROGON_TEST(PaginationOwnsContinuationAndRetainsOverrides) {
+    auto page{ drogon::sync_wait(client().chat.completions.List({ .model = "fake" }, { .extra_headers = { { "x-pages", "retained" } } })) };
+    REQUIRE(page);
+    CHECK(page->HasNextPage());
+    CHECK(page->data[0]._request_id == "page-1");
+    auto next{ drogon::sync_wait(page->GetNextPage()) };
+    REQUIRE(next);
+    CHECK(next->data[0].id == "id-2");
+    CHECK(next->raw["seen_query"] == "fake");
+    CHECK(next->raw["seen_header"] == "retained");
+    CHECK(!next->HasNextPage());
+    auto all{ drogon::sync_wait(page->All()) };
+    REQUIRE(all);
+    CHECK(all->size() == 2);
+    auto callback_failure{ drogon::sync_wait(page->ForEach([](auto const&) -> Result<bool> { throw std::runtime_error{ "consumer failed" }; })) };
+    REQUIRE(!callback_failure);
+    CHECK(callback_failure.error().kind == ErrorKind::InvalidRequest);
+    auto generic{ drogon::sync_wait(client().List("chat/completions")) };
+    REQUIRE(generic);
+    auto generic_all{ drogon::sync_wait(generic->All()) };
+    REQUIRE(generic_all);
+    CHECK(generic_all->size() == 2);
+    auto single{ drogon::sync_wait(client().List("chat/completions", {}, false)) };
+    REQUIRE(single);
+    CHECK(!single->HasNextPage());
+}
+
 DROGON_TEST(StreamDeliversIncrementallyAndReturnsFinalCompletion) {
     std::set<std::string> events;
     bool first_before_end{};
