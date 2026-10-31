@@ -242,4 +242,46 @@ namespace drogon_openai::details {
         co_return co_await poll_typed<types::files::FileObject>(std::move(transport), std::move(*path), std::move(poll), std::move(options));
     }
 
+    /**
+     * @brief Poll a video until completed or failed.
+     * @param video_id Owned operation parameters.
+     * @param poll Owned operation parameters.
+     * @param options Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto Videos::Poll(
+        std::string video_id,
+        PollOptions poll,
+        RequestOptions options
+    ) const -> drogon::Task<Result<types::videos::Video>> {
+
+        auto transport{ m_transport };
+        auto path{ resource_path("/videos/{video_id}", { { "video_id", video_id } }) };
+        if (!path) {
+            co_return std::unexpected{ std::move(path.error()) };
+        }
+        poll.terminal_states = { "completed", "failed" };
+        co_return co_await poll_typed<types::videos::Video>(std::move(transport), std::move(*path), std::move(poll), std::move(options));
+    }
+
+    /**
+     * @brief Create a video and poll the resulting resource.
+     * @param params Owned operation parameters.
+     * @param poll Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto Videos::CreateAndPoll(
+        types::videos::VideoCreateParams params,
+        PollOptions poll
+    ) const -> drogon::Task<Result<types::videos::Video>> {
+
+        auto group{ *this };
+        auto options{ params.Options() };
+        auto created{ co_await group.Create(std::move(params)) };
+        if (!created) {
+            co_return std::unexpected{ std::move(created.error()) };
+        }
+        co_return co_await group.Poll(created->id, std::move(poll), std::move(options));
+    }
+
 } // namespace drogon_openai::details

@@ -205,5 +205,29 @@ namespace drogon_openai::details {
             std::string video_id,
             types::videos::VideoRemixParams params = {}
         ) const -> drogon::Task<Result<RawResponse<types::videos::Video>>>;
+
+        /**
+         * @brief Poll a video until completed or failed.
+         * @param video_id Owned operation parameters.
+         * @param poll Owned operation parameters.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Poll(
+            std::string video_id,
+            PollOptions poll = {},
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<types::videos::Video>>;
+
+        /**
+         * @brief Create a video and poll the resulting resource.
+         * @param params Owned operation parameters.
+         * @param poll Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto CreateAndPoll(
+            types::videos::VideoCreateParams params,
+            PollOptions poll = {}
+        ) const -> drogon::Task<Result<types::videos::Video>>;
     };
 } // namespace drogon_openai::details
