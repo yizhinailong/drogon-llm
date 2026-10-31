@@ -17,6 +17,7 @@
 #include "drogon_openai/details/embeddings.hpp"
 #include "drogon_openai/details/files.hpp"
 #include "drogon_openai/details/images.hpp"
+#include "drogon_openai/details/live.hpp"
 #include "drogon_openai/details/models.hpp"
 #include "drogon_openai/details/moderations.hpp"
 #include "drogon_openai/details/realtime.hpp"
@@ -102,6 +103,7 @@ namespace drogon_openai {
         details::VectorStores vector_stores;  ///< SDK vector_stores API group.
         details::Webhooks webhooks;           ///< SDK webhooks API group.
         details::Realtime realtime;           ///< SDK realtime API group.
+        details::Live live;                   ///< SDK live API group.
 
         /**
          * @brief Copy this client with selected settings overridden.

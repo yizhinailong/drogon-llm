@@ -1855,6 +1855,142 @@ DROGON_TEST(RealtimeTranslationsClientSecretsCreateContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(LiveCreateContract) {
+    // SDK contract: live.create.
+    types::live::LiveCreateParams params;
+    params.session = json(R"JSON({"vendor":"value"})JSON");
+    params.transport = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"session":{},"transport":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().live.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/live/sessions");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(LiveSessionsAcceptContract) {
+    // SDK contract: live.sessions.accept.
+    types::live::SessionAcceptParams params;
+    params.session = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().live.sessions.Accept("session_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/live/sessions/session_id-value/accept");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
+DROGON_TEST(LiveSessionsDownloadRecordingContract) {
+    // SDK contract: live.sessions.download_recording.
+    types::live::LiveSessionsDownloadRecordingParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = true;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().live.sessions.DownloadRecording("session_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/live/sessions/session_id-value/content");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "application/binary");
+    CHECK(result->parsed == std::string("byte\0data", 9));
+}
+
+DROGON_TEST(LiveSessionsForkContract) {
+    // SDK contract: live.sessions.fork.
+    types::live::SessionForkParams params;
+    params.transport = json(R"JSON({"vendor":"value"})JSON");
+    params.session = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"session":{},"transport":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().live.sessions.Fork("session_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/live/sessions/session_id-value/fork");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(LiveSessionsHangupContract) {
+    // SDK contract: live.sessions.hangup.
+    types::live::LiveSessionsHangupParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().live.sessions.Hangup("session_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/live/sessions/session_id-value/hangup");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
+DROGON_TEST(LiveSessionsReferContract) {
+    // SDK contract: live.sessions.refer.
+    types::live::SessionReferParams params;
+    params.target_uri = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().live.sessions.Refer("session_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/live/sessions/session_id-value/refer");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
+DROGON_TEST(LiveSessionsRejectContract) {
+    // SDK contract: live.sessions.reject.
+    types::live::SessionRejectParams params;
+    params.status_code = 7;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().live.sessions.Reject("session_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/live/sessions/session_id-value/reject");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
