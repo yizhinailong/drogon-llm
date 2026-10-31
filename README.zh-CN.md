@@ -4,9 +4,9 @@
 
 基于 [drogon](https://github.com/drogonframework/drogon) 的 OpenAI 格式 API 插件库，供其他 drogon 应用以插件形式使用。它可以对接 OpenAI，也可以对接 DeepSeek 等使用相同请求格式的接口。
 
-接口按 [OpenAI Python SDK](https://github.com/openai/openai-python) 的 `AsyncOpenAI` 组织：`co_await client.chat.completions.Create(...)` 返回 `drogon::Task<Result<ChatCompletion>>`，其中 `Result<T>` 即 `std::expected<T, Error>`。目前实现了 chat completions，还不支持流式输出。
+接口按 [OpenAI Python SDK](https://github.com/openai/openai-python) 的 `AsyncOpenAI` 组织：`co_await client.chat.completions.Create(...)` 返回 `drogon::Task<Result<ChatCompletion>>`，其中 `Result<T>` 即 `std::expected<T, Error>`。Chat completions 已支持流式回调、结构化解析、工具、多模态消息和存储管理，另有 Responses、Embeddings、文件、图像、音频、视频、向量库、Realtime/Live 等 23 个根资源和 146 个 HTTP 方法，提供客户端默认设置、重试、原始响应、上传、二进制下载、分页、轮询、WebSocket 和 webhook 验签。
 
-[快速开始](#快速开始) · [文档索引](docs/zh-CN/README.md) · [插件使用说明](docs/zh-CN/drogon-plugin.md) · [版本标签、CI 与发布](docs/zh-CN/ci.md) · [Doxygen 使用说明](docs/zh-CN/doxygen.md)
+[快速开始](#快速开始) · [文档索引](docs/zh-CN/README.md) · [插件使用说明](docs/zh-CN/drogon-plugin.md) · [API 资源](docs/zh-CN/api-resources.md) · [版本标签、CI 与发布](docs/zh-CN/ci.md) · [Doxygen 使用说明](docs/zh-CN/doxygen.md)
 
 ## 环境与依赖
 
@@ -17,6 +17,7 @@
 | 编译器 | Linux 上为 `clang++`，Windows 上为 `clang-cl` | 公开头文件使用 `std::expected`，需要 C++23 |
 | [vcpkg](https://github.com/microsoft/vcpkg) | classic 模式 | 提供 drogon，需设置 `VCPKG_ROOT` |
 | drogon | 1.9.13 | 由 vcpkg 安装，`just init` 执行 `vcpkg install drogon` |
+| OpenSSL Crypto | 随 drogon 依赖安装 | 用于 webhook HMAC-SHA256；CMake 包自动查找 |
 
 [Linux CI](.github/workflows/linux-ci.yml) 和 [Windows CI](.github/workflows/windows-ci.yml) 分别在 Ubuntu 24.04 和 Windows Server 2025 上运行 debug 和 release 两套配置：
 

@@ -4,9 +4,9 @@ English · [简体中文](README.zh-CN.md)
 
 A plugin library for OpenAI-format APIs, built on [drogon](https://github.com/drogonframework/drogon) and used as a plugin by other drogon apps. It works with OpenAI and with any endpoint that uses the same request format, such as DeepSeek.
 
-The API follows the `AsyncOpenAI` client of the [OpenAI Python SDK](https://github.com/openai/openai-python): `co_await client.chat.completions.Create(...)` returns `drogon::Task<Result<ChatCompletion>>`, where `Result<T>` is `std::expected<T, Error>`. Chat completions are implemented so far; streaming is not supported yet.
+The API follows the `AsyncOpenAI` client of the [OpenAI Python SDK](https://github.com/openai/openai-python): `co_await client.chat.completions.Create(...)` returns `drogon::Task<Result<ChatCompletion>>`, where `Result<T>` is `std::expected<T, Error>`. Chat completions include streaming callbacks, structured parsing, tools, multimodal messages, and stored completion management. Another 23 root resources and 146 HTTP methods cover Responses, Embeddings, files, images, audio, videos, vector stores, Realtime/Live and more, with client defaults, retries, raw responses, uploads, binary downloads, pagination, polling, WebSocket and webhook verification.
 
-[Quick start](#quick-start) · [Documentation index](docs/en/README.md) · [Plugin guide](docs/en/drogon-plugin.md) · [Version tags, CI, and releases](docs/en/ci.md) · [Doxygen guide](docs/en/doxygen.md)
+[Quick start](#quick-start) · [Documentation index](docs/en/README.md) · [Plugin guide](docs/en/drogon-plugin.md) · [API resources](docs/en/api-resources.md) · [Version tags, CI, and releases](docs/en/ci.md) · [Doxygen guide](docs/en/doxygen.md)
 
 ## Requirements
 
@@ -17,6 +17,7 @@ The API follows the `AsyncOpenAI` client of the [OpenAI Python SDK](https://gith
 | Compiler | `clang++` on Linux, `clang-cl` on Windows | The public headers use `std::expected`, which needs C++23 |
 | [vcpkg](https://github.com/microsoft/vcpkg) | Classic mode | Provides drogon; `VCPKG_ROOT` must be set |
 | drogon | 1.9.13 | Installed by vcpkg; `just init` runs `vcpkg install drogon` |
+| OpenSSL Crypto | Installed with Drogon dependencies | Webhook HMAC-SHA256; found automatically by the CMake package |
 
 [Linux CI](.github/workflows/linux-ci.yml) and [Windows CI](.github/workflows/windows-ci.yml) each run a debug and a release configuration, on Ubuntu 24.04 and Windows Server 2025:
 
