@@ -12,6 +12,7 @@
 
 #include "drogon_openai/details/chat.hpp"
 #include "drogon_openai/error.hpp"
+#include "drogon_openai/pagination.hpp"
 #include "drogon_openai/request_options.hpp"
 
 namespace drogon_openai {
@@ -180,6 +181,19 @@ namespace drogon_openai {
         ) const -> drogon::Task<Result<RawResponse<Json::Value>>>;
 
         /**
+         * @brief List an unwrapped collection with automatic or manual pagination.
+         * @param path API collection path.
+         * @param options Query and request overrides retained across pages.
+         * @param cursor False for a single SDK-style page without cursor traversal.
+         * @return Owned JSON page or an error.
+         */
+        [[nodiscard]] auto List(
+            std::string path,
+            RequestOptions options = {},
+            bool cursor = true
+        ) const -> drogon::Task<Result<JsonPage>>;
+
+        /**
          * @brief GET binary content without interpreting it as JSON.
          * @param path API path.
          * @param options Request overrides.
@@ -202,6 +216,62 @@ namespace drogon_openai {
             std::vector<MultipartPart> parts,
             RequestOptions options = {}
         ) const -> drogon::Task<Result<Json::Value>>;
+
+        /**
+         * @brief Create an unwrapped resource and poll its collection/id path to a terminal state.
+         * @param path Collection POST path.
+         * @param body Creation JSON body.
+         * @param poll Polling options; the total deadline starts after creation.
+         * @param options Request overrides for creation and polling.
+         * @return Terminal resource or an error.
+         */
+        [[nodiscard]] auto PostAndPoll(
+            std::string path,
+            Json::Value body,
+            PollOptions poll = {},
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<Json::Value>>;
+
+        /**
+         * @brief Upload an unwrapped resource and poll its collection/id path to a terminal state.
+         * @param path Collection upload path.
+         * @param parts Multipart fields and files.
+         * @param poll Polling options; the total deadline starts after creation.
+         * @param options Request overrides for upload and polling.
+         * @return Terminal resource or an error.
+         */
+        [[nodiscard]] auto UploadAndPoll(
+            std::string path,
+            std::vector<MultipartPart> parts,
+            PollOptions poll = {},
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<Json::Value>>;
+
+        /**
+         * @brief Poll an unwrapped resource until it reaches a terminal state.
+         * @param path Resource GET path.
+         * @param poll Polling interval, deadline, and terminal states.
+         * @param options Request overrides, applied to each poll.
+         * @return Terminal resource or an error.
+         */
+        [[nodiscard]] auto Poll(
+            std::string path,
+            PollOptions poll = {},
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<Json::Value>>;
+
+        /**
+         * @brief Poll a resource and preserve the final HTTP response metadata.
+         * @param path Resource GET path.
+         * @param poll Polling interval, deadline, and terminal states.
+         * @param options Request overrides, applied to each poll.
+         * @return Terminal raw resource or an error.
+         */
+        [[nodiscard]] auto PollRaw(
+            std::string path,
+            PollOptions poll = {},
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<RawResponse<Json::Value>>>;
     };
 
     /**

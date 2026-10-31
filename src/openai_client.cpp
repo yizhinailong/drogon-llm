@@ -271,6 +271,32 @@ namespace drogon_openai {
     }
 
     /**
+     * @brief List an unwrapped collection with automatic or manual pagination.
+     * @param path API collection path.
+     * @param options Query and request overrides retained across pages.
+     * @param cursor False for a single SDK-style page without cursor traversal.
+     * @return Owned JSON page or an error.
+     */
+    auto OpenAI::List(
+        std::string path,
+        RequestOptions options,
+        bool cursor
+    ) const -> drogon::Task<Result<JsonPage>> {
+        auto const transport{ m_transport };
+        auto owned_client{ *this };
+        auto response{ co_await transport->Request("GET", path, {}, options) };
+        if (!response) {
+            co_return std::unexpected{ response.error() };
+        }
+        auto next{ [client = std::move(owned_client), path, options](std::string after) mutable {
+            auto query{ options };
+            query.extra_query["after"] = std::move(after);
+            return client.List(path, std::move(query));
+        } };
+        co_return JsonPage::FromResponse(std::move(*response), {}, std::move(next), cursor);
+    }
+
+    /**
      * @brief GET binary content without interpreting it as JSON.
      * @param path API path.
      * @param options Request overrides.
@@ -346,6 +372,157 @@ namespace drogon_openai {
             co_return std::unexpected{ std::move(error) };
         }
         co_return std::move(*parsed);
+    }
+
+    /**
+     * @brief Create an unwrapped resource and poll its collection/id path to a terminal state.
+     * @param path Collection POST path.
+     * @param body Creation JSON body.
+     * @param poll Polling options; the total deadline starts after creation.
+     * @param options Request overrides for creation and polling.
+     * @return Terminal resource or an error.
+     */
+    auto OpenAI::PostAndPoll(
+        std::string path,
+        Json::Value body,
+        PollOptions poll,
+        RequestOptions options
+    ) const -> drogon::Task<Result<Json::Value>> {
+        auto client{ *this };
+        auto resource{ co_await client.Post(path, std::move(body), options) };
+        if (!resource) {
+            co_return std::unexpected{ resource.error() };
+        }
+        if (!resource->isObject() || !(*resource)["id"].isString() || (*resource)["id"].asString().empty()) {
+            co_return std::unexpected{ Error{ .kind = ErrorKind::ResponseValidation, .message = "created resource has no string id", .body = resource->toStyledString() } };
+        }
+        auto const query{ path.find('?') };
+        auto collection{ path.substr(0, query) };
+        while (collection.ends_with('/')) {
+            collection.pop_back();
+        }
+        auto target{ collection + "/" + details::encode_path_segment((*resource)["id"].asString()) };
+        if (query != std::string::npos) {
+            target += path.substr(query);
+        }
+        co_return co_await client.Poll(std::move(target), std::move(poll), std::move(options));
+    }
+
+    /**
+     * @brief Upload an unwrapped resource and poll its collection/id path to a terminal state.
+     * @param path Collection upload path.
+     * @param parts Multipart fields and files.
+     * @param poll Polling options; the total deadline starts after creation.
+     * @param options Request overrides for upload and polling.
+     * @return Terminal resource or an error.
+     */
+    auto OpenAI::UploadAndPoll(
+        std::string path,
+        std::vector<MultipartPart> parts,
+        PollOptions poll,
+        RequestOptions options
+    ) const -> drogon::Task<Result<Json::Value>> {
+        auto client{ *this };
+        auto resource{ co_await client.PostMultipart(path, std::move(parts), options) };
+        if (!resource) {
+            co_return std::unexpected{ resource.error() };
+        }
+        if (!resource->isObject() || !(*resource)["id"].isString() || (*resource)["id"].asString().empty()) {
+            co_return std::unexpected{ Error{ .kind = ErrorKind::ResponseValidation, .message = "created resource has no string id", .body = resource->toStyledString() } };
+        }
+        auto const query{ path.find('?') };
+        auto collection{ path.substr(0, query) };
+        while (collection.ends_with('/')) {
+            collection.pop_back();
+        }
+        auto target{ collection + "/" + details::encode_path_segment((*resource)["id"].asString()) };
+        if (query != std::string::npos) {
+            target += path.substr(query);
+        }
+        co_return co_await client.Poll(std::move(target), std::move(poll), std::move(options));
+    }
+
+    /**
+     * @brief Poll an unwrapped resource until it reaches a terminal state.
+     * @param path Resource GET path.
+     * @param poll Polling interval, deadline, and terminal states.
+     * @param options Request overrides, applied to each poll.
+     * @return Terminal resource or an error.
+     */
+    auto OpenAI::Poll(
+        std::string path,
+        PollOptions poll,
+        RequestOptions options
+    ) const -> drogon::Task<Result<Json::Value>> {
+
+        auto client{ *this };
+        auto response{ co_await client.PollRaw(std::move(path), std::move(poll), std::move(options)) };
+        if (!response) {
+            co_return std::unexpected{ std::move(response.error()) };
+        }
+        co_return std::move(response->parsed);
+    }
+
+    /**
+     * @brief Poll a resource and preserve the final HTTP response metadata.
+     * @param path Resource GET path.
+     * @param poll Polling interval, deadline, and terminal states.
+     * @param options Request overrides, applied to each poll.
+     * @return Terminal raw resource or an error.
+     */
+    auto OpenAI::PollRaw(
+        std::string path,
+        PollOptions poll,
+        RequestOptions options
+    ) const -> drogon::Task<Result<RawResponse<Json::Value>>> {
+        auto const transport{ m_transport };
+        if (!std::isfinite(poll.interval) || poll.interval < 0 || !std::isfinite(poll.timeout) || poll.timeout < 0 || poll.terminal_states.empty()) {
+            co_return std::unexpected{ Error{ .kind = ErrorKind::InvalidRequest, .message = "invalid polling interval, deadline, or terminal states" } };
+        }
+        auto const start{ std::chrono::steady_clock::now() };
+        std::optional<std::chrono::steady_clock::time_point> deadline;
+        if (poll.timeout > 0) {
+            deadline = start + std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>{ poll.timeout });
+        }
+        while (true) {
+            double const elapsed{ std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() };
+            double const remaining{ poll.timeout - elapsed };
+            if (poll.timeout > 0 && remaining <= 0) {
+                co_return std::unexpected{ Error{ .kind = ErrorKind::Timeout, .message = "polling deadline exceeded" } };
+            }
+            auto request_options{ options };
+            if (poll.timeout > 0) {
+                auto phase{ options.timeout.value_or(transport->Config().timeout) };
+                auto cap{ [remaining](double value) { return value == 0 ? remaining : std::min(value, remaining); } };
+                phase.connect = cap(phase.connect);
+                phase.read = cap(phase.read);
+                phase.write = cap(phase.write);
+                request_options.timeout = phase;
+            }
+            auto response{ co_await transport->Request("GET", path, {}, std::move(request_options), deadline) };
+            if (!response) {
+                co_return std::unexpected{ response.error() };
+            }
+            if (!response->parsed.isObject() || !response->parsed[poll.status_field].isString()) {
+                co_return std::unexpected{ Error{ .kind = ErrorKind::ResponseValidation, .message = "poll response has no string status", .status_code = response->status_code, .body = response->body, .request_id = response->request_id, .headers = response->headers } };
+            }
+            auto const status{ response->parsed[poll.status_field].asString() };
+            if (std::find(poll.terminal_states.begin(), poll.terminal_states.end(), status) != poll.terminal_states.end()) {
+                co_return std::move(*response);
+            }
+            double delay{ poll.interval };
+            if (auto const it{ response->headers.find("openai-poll-after-ms") }; it != response->headers.end()) {
+                char* end{};
+                double const value{ std::strtod(it->second.c_str(), &end) };
+                if (end != it->second.c_str() && *end == '\0' && std::isfinite(value) && value >= 0) {
+                    delay = value / 1000;
+                }
+            }
+            if (poll.timeout > 0) {
+                delay = std::min(delay, std::max(0.0, poll.timeout - std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count()));
+            }
+            co_await drogon::sleepCoro(details::current_loop(), delay);
+        }
     }
 
     /**

@@ -315,6 +315,43 @@ DROGON_TEST(MultipartPreservesBinaryAndFields) {
     CHECK((*response)["files"][0]["bytes"] == "QQBC/w==");
 }
 
+DROGON_TEST(PollReachesTerminalStateOrDeadline) {
+    g_poll_requests = 0;
+    auto result{ drogon::sync_wait(client().Poll("job", { .interval = 0.5, .timeout = 1.0 })) };
+    REQUIRE(result.has_value());
+    CHECK((*result)["status"] == "completed");
+    CHECK(g_poll_requests == 3);
+    auto deadline{ drogon::sync_wait(client().Poll("job?forever=true", { .interval = 0.01, .timeout = 0.03 })) };
+    REQUIRE(!deadline.has_value());
+    CHECK(deadline.error().kind == drogon_openai::ErrorKind::Timeout);
+    auto start{ std::chrono::steady_clock::now() };
+    auto stalled{ drogon::sync_wait(client().Poll("slow", { .timeout = 0.03 })) };
+    REQUIRE(!stalled);
+    CHECK(stalled.error().kind == drogon_openai::ErrorKind::Timeout);
+    CHECK(std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() < 0.2);
+    auto invalid{ drogon::sync_wait(client().Poll("echo")) };
+    REQUIRE(!invalid.has_value());
+    CHECK(invalid.error().status_code == 200);
+    CHECK(invalid.error().request_id == "req-client");
+    CHECK(invalid.error().kind == drogon_openai::ErrorKind::ResponseValidation);
+}
+
+DROGON_TEST(CreateAndUploadHelpersPollCreatedResource) {
+    g_poll_requests = 0;
+    auto created{ drogon::sync_wait(client().PostAndPoll("jobs", Json::Value{ Json::objectValue }, { .interval = 0.001 })) };
+    REQUIRE(created);
+    CHECK((*created)["status"] == "completed");
+    CHECK(g_poll_requests == 2);
+    g_poll_requests = 0;
+    auto uploaded{ drogon::sync_wait(client().UploadAndPoll("jobs", { { .name = "file", .content = "data", .filename = "test.txt" } }, { .interval = 0.001 })) };
+    REQUIRE(uploaded);
+    CHECK((*uploaded)["status"] == "completed");
+    CHECK(g_poll_requests == 2);
+    auto invalid{ drogon::sync_wait(client().PostAndPoll("echo", {})) };
+    REQUIRE(!invalid);
+    CHECK(invalid.error().kind == drogon_openai::ErrorKind::ResponseValidation);
+}
+
 DROGON_TEST(StatusPredicatesAndInvalidOptions) {
     using drogon_openai::Error;
     using drogon_openai::ErrorKind;
