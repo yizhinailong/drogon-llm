@@ -129,5 +129,18 @@ namespace drogon_openai::details {
             std::string file_id,
             types::files::FilesRetrieveContentParams params = {}
         ) const -> drogon::Task<Result<RawResponse<std::string>>>;
+
+        /**
+         * @brief Wait for a file to finish processing or enter an error state.
+         * @param file_id Owned operation parameters.
+         * @param poll Owned operation parameters.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto WaitForProcessing(
+            std::string file_id,
+            PollOptions poll = {},
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<types::files::FileObject>>;
     };
 } // namespace drogon_openai::details

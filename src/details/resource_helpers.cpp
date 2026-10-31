@@ -220,4 +220,26 @@ namespace drogon_openai::details {
         co_return std::move(*response);
     }
 
+    /**
+     * @brief Wait for a file to finish processing or enter an error state.
+     * @param file_id Owned operation parameters.
+     * @param poll Owned operation parameters.
+     * @param options Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto Files::WaitForProcessing(
+        std::string file_id,
+        PollOptions poll,
+        RequestOptions options
+    ) const -> drogon::Task<Result<types::files::FileObject>> {
+
+        auto transport{ m_transport };
+        auto path{ resource_path("/files/{file_id}", { { "file_id", file_id } }) };
+        if (!path) {
+            co_return std::unexpected{ std::move(path.error()) };
+        }
+        poll.terminal_states = { "processed", "error", "deleted" };
+        co_return co_await poll_typed<types::files::FileObject>(std::move(transport), std::move(*path), std::move(poll), std::move(options));
+    }
+
 } // namespace drogon_openai::details
