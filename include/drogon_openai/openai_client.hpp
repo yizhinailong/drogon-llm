@@ -19,6 +19,7 @@
 #include "drogon_openai/details/images.hpp"
 #include "drogon_openai/details/models.hpp"
 #include "drogon_openai/details/moderations.hpp"
+#include "drogon_openai/details/realtime.hpp"
 #include "drogon_openai/details/responses.hpp"
 #include "drogon_openai/details/text_completions.hpp"
 #include "drogon_openai/details/uploads.hpp"
@@ -100,6 +101,7 @@ namespace drogon_openai {
         details::Batches batches;             ///< SDK batches API group.
         details::VectorStores vector_stores;  ///< SDK vector_stores API group.
         details::Webhooks webhooks;           ///< SDK webhooks API group.
+        details::Realtime realtime;           ///< SDK realtime API group.
 
         /**
          * @brief Copy this client with selected settings overridden.

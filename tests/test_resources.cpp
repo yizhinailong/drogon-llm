@@ -1703,6 +1703,158 @@ DROGON_TEST(WebhooksTestContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(RealtimeCallsCreateContract) {
+    // SDK contract: realtime.calls.create.
+    types::realtime::CallCreateParams params;
+    params.sdp = "value";
+    params.session = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = true;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().realtime.calls.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/realtime/calls");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "application/sdp");
+    CHECK(result->parsed == std::string("byte\0data", 9));
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+}
+
+DROGON_TEST(RealtimeCallsAcceptContract) {
+    // SDK contract: realtime.calls.accept.
+    types::realtime::CallAcceptParams params;
+    params.type = "value";
+    params.audio = json(R"JSON({"vendor":"value"})JSON");
+    params.include = std::vector<std::string>{};
+    params.instructions = "value";
+    params.max_output_tokens = json(R"JSON({"vendor":"value"})JSON");
+    params.model = "value";
+    params.output_modalities = std::vector<std::string>{};
+    params.parallel_tool_calls = true;
+    params.prompt = json(R"JSON({"vendor":"value"})JSON");
+    params.reasoning = json(R"JSON({"vendor":"value"})JSON");
+    params.tool_choice = json(R"JSON({"vendor":"value"})JSON");
+    params.tools = json(R"JSON({"vendor":"value"})JSON");
+    params.tracing = json(R"JSON({"vendor":"value"})JSON");
+    params.truncation = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().realtime.calls.Accept("call_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/realtime/calls/call_id-value/accept");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
+DROGON_TEST(RealtimeCallsHangupContract) {
+    // SDK contract: realtime.calls.hangup.
+    types::realtime::RealtimeCallsHangupParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().realtime.calls.Hangup("call_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/realtime/calls/call_id-value/hangup");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
+DROGON_TEST(RealtimeCallsReferContract) {
+    // SDK contract: realtime.calls.refer.
+    types::realtime::CallReferParams params;
+    params.target_uri = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().realtime.calls.Refer("call_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/realtime/calls/call_id-value/refer");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
+DROGON_TEST(RealtimeCallsRejectContract) {
+    // SDK contract: realtime.calls.reject.
+    types::realtime::CallRejectParams params;
+    params.status_code = 7;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().realtime.calls.Reject("call_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/realtime/calls/call_id-value/reject");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
+DROGON_TEST(RealtimeClientSecretsCreateContract) {
+    // SDK contract: realtime.client_secrets.create.
+    types::realtime::ClientSecretCreateParams params;
+    params.expires_after = json(R"JSON({"vendor":"value"})JSON");
+    params.session = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"expires_at":7,"session":{},"value":"resource","id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().realtime.client_secrets.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/realtime/client_secrets");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(RealtimeTranslationsClientSecretsCreateContract) {
+    // SDK contract: realtime.translations.client_secrets.create.
+    types::realtime::RealtimeTranslationsClientSecretsCreateParams params;
+    params.session = json(R"JSON({"vendor":"value"})JSON");
+    params.expires_after = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"expires_at":7,"session":{},"value":"resource","id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().realtime.translations.client_secrets.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/realtime/translations/client_secrets");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
