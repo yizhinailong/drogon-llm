@@ -11,6 +11,7 @@
 | 文档 | 内容 |
 | --- | --- |
 | [drogon 插件使用说明](drogon-plugin.md) | 接入、注册与配置、生命周期、调用 chat completions、错误处理、线程模型、已知限制与测试 |
+| [API 资源](api-resources.md) | Chat 以外的完整接口目录、字段约定、Responses、上传轮询、WebSocket 和 webhook |
 
 API 参考由 Doxygen 从 `include/` 和 `src/` 的注释生成，见 [Doxygen 使用说明](doxygen.md)。
 
