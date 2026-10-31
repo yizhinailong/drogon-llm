@@ -861,6 +861,240 @@ DROGON_TEST(ImagesGenerateContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(AudioSpeechCreateContract) {
+    // SDK contract: audio.speech.create.
+    types::audio::SpeechCreateParams params;
+    params.input = "value";
+    params.model = "value";
+    params.voice = json(R"JSON({"vendor":"value"})JSON");
+    params.instructions = "value";
+    params.response_format = "value";
+    params.speed = 0.5;
+    params.stream_format = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = true;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().audio.speech.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/audio/speech");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "application/octet-stream");
+    CHECK(result->parsed == std::string("byte\0data", 9));
+}
+
+DROGON_TEST(AudioTranscriptionsCreateContract) {
+    // SDK contract: audio.transcriptions.create.
+    types::audio::AudioTranscriptionsCreateParams params;
+    params.file = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.model = "value";
+    params.chunking_strategy = json(R"JSON({"vendor":"value"})JSON");
+    params.include = json(R"JSON({"vendor":"value"})JSON");
+    params.keywords = std::vector<std::string>{};
+    params.known_speaker_names = std::vector<std::string>{};
+    params.known_speaker_references = std::vector<std::string>{};
+    params.language = "value";
+    params.languages = std::vector<std::string>{};
+    params.prompt = "value";
+    params.response_format = json(R"JSON({"vendor":"value"})JSON");
+    params.stream = false;
+    params.temperature = 0.5;
+    params.timestamp_granularities = std::vector<std::string>{};
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().audio.transcriptions.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/audio/transcriptions");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
+DROGON_TEST(AudioTranslationsCreateContract) {
+    // SDK contract: audio.translations.create.
+    types::audio::TranslationCreateParams params;
+    params.file = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.model = "value";
+    params.prompt = "value";
+    params.response_format = "value";
+    params.temperature = 0.5;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().audio.translations.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/audio/translations");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
+DROGON_TEST(AudioVoiceConsentsCreateContract) {
+    // SDK contract: audio.voice_consents.create.
+    types::audio::VoiceConsentCreateParams params;
+    params.language = "value";
+    params.name = "value";
+    params.recording = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"language":"resource","name":"resource","object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().audio.voice_consents.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/audio/voice_consents");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
+DROGON_TEST(AudioVoiceConsentsRetrieveContract) {
+    // SDK contract: audio.voice_consents.retrieve.
+    types::audio::AudioVoiceConsentsRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"language":"resource","name":"resource","object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().audio.voice_consents.Retrieve("consent_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/audio/voice_consents/consent_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(AudioVoiceConsentsUpdateContract) {
+    // SDK contract: audio.voice_consents.update.
+    types::audio::VoiceConsentUpdateParams params;
+    params.name = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"language":"resource","name":"resource","object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().audio.voice_consents.Update("consent_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/audio/voice_consents/consent_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(AudioVoiceConsentsListContract) {
+    // SDK contract: audio.voice_consents.list.
+    types::audio::VoiceConsentListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"language":"resource","name":"resource","object":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().audio.voice_consents.List(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/audio/voice_consents");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(AudioVoiceConsentsDeleteContract) {
+    // SDK contract: audio.voice_consents.delete.
+    types::audio::AudioVoiceConsentsDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","deleted":true,"object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().audio.voice_consents.Delete("consent_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/audio/voice_consents/consent_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(AudioVoicesCreateContract) {
+    // SDK contract: audio.voices.create.
+    types::audio::VoiceCreateParams params;
+    params.audio_sample = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.consent = "value";
+    params.name = "value";
+    params.type = "value";
+    params.prompt = "value";
+    params.model = "value";
+    params.script_hint = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"name":"resource","object":"resource","type":"resource","prompt":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().audio.voices.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/audio/voices");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
+DROGON_TEST(AudioVoicesDeleteContract) {
+    // SDK contract: audio.voices.delete.
+    types::audio::AudioVoicesDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","deleted":true,"object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().audio.voices.Delete("voice_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/audio/voices/voice_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
