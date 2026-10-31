@@ -25,6 +25,17 @@ namespace drogon_openai::details {
          * @param transport Shared endpoint settings.
          */
         explicit LiveForks(std::shared_ptr<Transport> transport);
+
+        /**
+         * @brief Open an authenticated WebSocket session for this resource.
+         * @param session_id Owned operation parameters.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Connect(
+            std::string session_id,
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<WebSocketSession>>;
     };
 
     /**
@@ -176,6 +187,17 @@ namespace drogon_openai::details {
          * @param transport Shared endpoint settings.
          */
         explicit LiveSideband(std::shared_ptr<Transport> transport);
+
+        /**
+         * @brief Open an authenticated WebSocket session for this resource.
+         * @param session_id Owned operation parameters.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Connect(
+            std::string session_id,
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<WebSocketSession>>;
     };
 
     /**
@@ -212,5 +234,14 @@ namespace drogon_openai::details {
         [[nodiscard]] auto CreateRaw(
             types::live::LiveCreateParams params = {}
         ) const -> drogon::Task<Result<RawResponse<types::live::LiveCreateResponse>>>;
+
+        /**
+         * @brief Open an authenticated WebSocket session for this resource.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Connect(
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<WebSocketSession>>;
     };
 } // namespace drogon_openai::details

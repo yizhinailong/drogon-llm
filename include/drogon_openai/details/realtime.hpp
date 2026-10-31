@@ -204,6 +204,17 @@ namespace drogon_openai::details {
          */
         explicit RealtimeTranslations(std::shared_ptr<Transport> transport);
         RealtimeTranslationsClientSecrets client_secrets; ///< Nested SDK resource client_secrets.
+
+        /**
+         * @brief Open an authenticated WebSocket session for this resource.
+         * @param model Owned operation parameters.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Connect(
+            std::string model = "",
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<WebSocketSession>>;
     };
 
     /**
@@ -222,5 +233,16 @@ namespace drogon_openai::details {
         RealtimeClientSecrets client_secrets; ///< Nested SDK resource client_secrets.
         RealtimeCalls calls;                  ///< Nested SDK resource calls.
         RealtimeTranslations translations;    ///< Nested SDK resource translations.
+
+        /**
+         * @brief Open an authenticated WebSocket session for this resource.
+         * @param model Owned operation parameters.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Connect(
+            std::string model = "",
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<WebSocketSession>>;
     };
 } // namespace drogon_openai::details

@@ -232,5 +232,14 @@ namespace drogon_openai::details {
             types::responses::ResponsesCreateParams params,
             ApiEventCallback callback = {}
         ) const -> drogon::Task<Result<types::responses::Response>>;
+
+        /**
+         * @brief Open an authenticated WebSocket session for this resource.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Connect(
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<WebSocketSession>>;
     };
 } // namespace drogon_openai::details
