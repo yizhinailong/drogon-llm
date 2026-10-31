@@ -762,6 +762,105 @@ DROGON_TEST(UploadsCompleteContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(ImagesCreateVariationContract) {
+    // SDK contract: images.create_variation.
+    types::images::ImageCreateVariationParams params;
+    params.image = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.model = json(R"JSON({"vendor":"value"})JSON");
+    params.n = json(R"JSON({"vendor":"value"})JSON");
+    params.response_format = json(R"JSON({"vendor":"value"})JSON");
+    params.size = json(R"JSON({"vendor":"value"})JSON");
+    params.user = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"created":7,"background":{},"data":[],"output_format":{},"quality":{},"safety_identifier":{},"size":{},"usage":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().images.CreateVariation(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/images/variations");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
+DROGON_TEST(ImagesEditContract) {
+    // SDK contract: images.edit.
+    types::images::ImagesEditParams params;
+    params.image = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.prompt = "value";
+    params.background = json(R"JSON({"vendor":"value"})JSON");
+    params.input_fidelity = json(R"JSON({"vendor":"value"})JSON");
+    params.markup = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.mask = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.model = json(R"JSON({"vendor":"value"})JSON");
+    params.n = json(R"JSON({"vendor":"value"})JSON");
+    params.output_compression = json(R"JSON({"vendor":"value"})JSON");
+    params.output_format = json(R"JSON({"vendor":"value"})JSON");
+    params.partial_images = json(R"JSON({"vendor":"value"})JSON");
+    params.quality = json(R"JSON({"vendor":"value"})JSON");
+    params.response_format = json(R"JSON({"vendor":"value"})JSON");
+    params.safety_identifier = json(R"JSON({"vendor":"value"})JSON");
+    params.size = json(R"JSON({"vendor":"value"})JSON");
+    params.stream = false;
+    params.user = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"created":7,"background":{},"data":[],"output_format":{},"quality":{},"safety_identifier":{},"size":{},"usage":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().images.Edit(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/images/edits");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
+DROGON_TEST(ImagesGenerateContract) {
+    // SDK contract: images.generate.
+    types::images::ImagesGenerateParams params;
+    params.prompt = "value";
+    params.background = json(R"JSON({"vendor":"value"})JSON");
+    params.model = json(R"JSON({"vendor":"value"})JSON");
+    params.moderation = json(R"JSON({"vendor":"value"})JSON");
+    params.n = json(R"JSON({"vendor":"value"})JSON");
+    params.output_compression = json(R"JSON({"vendor":"value"})JSON");
+    params.output_format = json(R"JSON({"vendor":"value"})JSON");
+    params.partial_images = json(R"JSON({"vendor":"value"})JSON");
+    params.quality = json(R"JSON({"vendor":"value"})JSON");
+    params.response_format = json(R"JSON({"vendor":"value"})JSON");
+    params.safety_identifier = json(R"JSON({"vendor":"value"})JSON");
+    params.size = json(R"JSON({"vendor":"value"})JSON");
+    params.stream = false;
+    params.style = json(R"JSON({"vendor":"value"})JSON");
+    params.user = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"created":7,"background":{},"data":[],"output_format":{},"quality":{},"safety_identifier":{},"size":{},"usage":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().images.Generate(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/images/generations");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.

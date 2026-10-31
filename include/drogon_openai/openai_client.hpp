@@ -14,6 +14,7 @@
 #include "drogon_openai/details/conversations.hpp"
 #include "drogon_openai/details/embeddings.hpp"
 #include "drogon_openai/details/files.hpp"
+#include "drogon_openai/details/images.hpp"
 #include "drogon_openai/details/models.hpp"
 #include "drogon_openai/details/moderations.hpp"
 #include "drogon_openai/details/responses.hpp"
@@ -90,6 +91,7 @@ namespace drogon_openai {
         details::Moderations moderations;     ///< SDK moderations API group.
         details::Files files;                 ///< SDK files API group.
         details::Uploads uploads;             ///< SDK uploads API group.
+        details::Images images;               ///< SDK images API group.
 
         /**
          * @brief Copy this client with selected settings overridden.
