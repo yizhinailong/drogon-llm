@@ -3172,6 +3172,31 @@ DROGON_TEST(SkillsVersionsDeleteContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(DecisionsCreateContract) {
+    // SDK contract: decisions.create.
+    types::decisions::DecisionCreateParams params;
+    params.input = json(R"JSON({"vendor":"value"})JSON");
+    params.model = "value";
+    params.questions = json(R"JSON({"vendor":"value"})JSON");
+    params.prompt_cache_key = json(R"JSON({"vendor":"value"})JSON");
+    params.prompt_cache_options = json(R"JSON({"vendor":"value"})JSON");
+    params.safety_identifier = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"answers":[],"model":"resource","usage":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().decisions.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/decisions");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.

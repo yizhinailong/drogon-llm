@@ -15,6 +15,7 @@
 #include "drogon_openai/details/chat.hpp"
 #include "drogon_openai/details/containers.hpp"
 #include "drogon_openai/details/conversations.hpp"
+#include "drogon_openai/details/decisions.hpp"
 #include "drogon_openai/details/embeddings.hpp"
 #include "drogon_openai/details/evals.hpp"
 #include "drogon_openai/details/files.hpp"
@@ -114,6 +115,7 @@ namespace drogon_openai {
         details::Containers containers;       ///< SDK containers API group.
         details::Videos videos;               ///< SDK videos API group.
         details::Skills skills;               ///< SDK skills API group.
+        details::Decisions decisions;         ///< SDK decisions API group.
 
         /**
          * @brief Copy this client with selected settings overridden.
