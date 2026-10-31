@@ -27,6 +27,7 @@
 #include "drogon_openai/details/moderations.hpp"
 #include "drogon_openai/details/realtime.hpp"
 #include "drogon_openai/details/responses.hpp"
+#include "drogon_openai/details/safety.hpp"
 #include "drogon_openai/details/skills.hpp"
 #include "drogon_openai/details/text_completions.hpp"
 #include "drogon_openai/details/uploads.hpp"
@@ -118,6 +119,7 @@ namespace drogon_openai {
         details::Skills skills;                                     ///< SDK skills API group.
         details::Decisions decisions;                               ///< SDK decisions API group.
         details::ContentProvenanceChecks content_provenance_checks; ///< SDK content_provenance_checks API group.
+        details::Safety safety;                                     ///< SDK safety API group.
 
         /**
          * @brief Copy this client with selected settings overridden.

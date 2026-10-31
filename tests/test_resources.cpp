@@ -3219,6 +3219,44 @@ DROGON_TEST(ContentProvenanceChecksCreateContract) {
     CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
 }
 
+DROGON_TEST(SafetyAlertsRetrieveContract) {
+    // SDK contract: safety.alerts.retrieve.
+    types::safety::SafetyAlertsRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"error_type":"resource","model":"resource","object":"resource","reason":{},"request_id":"resource","request_paused":true,"response_id":"resource","detailed_explanation":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().safety.alerts.Retrieve("id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/safety/alerts/id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(SafetyCasesRetrieveContract) {
+    // SDK contract: safety.cases.retrieve.
+    types::safety::SafetyCasesRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"entity_identifier":"resource","notice":{},"object":"resource","reason":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().safety.cases.Retrieve("id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/safety/cases/id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
