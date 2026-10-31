@@ -178,6 +178,199 @@ DROGON_TEST(TextCompletionsCreateContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(ResponsesInputItemsListContract) {
+    // SDK contract: responses.input_items.list.
+    types::responses::InputItemListParams params;
+    params.after = "value";
+    params.include = json(R"JSON({"vendor":"value"})JSON");
+    params.limit = 7;
+    params.order = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().responses.input_items.List("response_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/responses/response_id-value/input_items");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(ResponsesInputTokensCountContract) {
+    // SDK contract: responses.input_tokens.count.
+    types::responses::InputTokenCountParams params;
+    params.conversation = json(R"JSON({"vendor":"value"})JSON");
+    params.input = json(R"JSON({"vendor":"value"})JSON");
+    params.instructions = json(R"JSON({"vendor":"value"})JSON");
+    params.model = json(R"JSON({"vendor":"value"})JSON");
+    params.parallel_tool_calls = json(R"JSON({"vendor":"value"})JSON");
+    params.personality = "value";
+    params.previous_response_id = json(R"JSON({"vendor":"value"})JSON");
+    params.reasoning = json(R"JSON({"vendor":"value"})JSON");
+    params.text = json(R"JSON({"vendor":"value"})JSON");
+    params.tool_choice = json(R"JSON({"vendor":"value"})JSON");
+    params.tools = json(R"JSON({"vendor":"value"})JSON");
+    params.truncation = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"input_tokens":7,"object":"resource","id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().responses.input_tokens.Count(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/responses/input_tokens");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(ResponsesCreateContract) {
+    // SDK contract: responses.create.
+    types::responses::ResponsesCreateParams params;
+    params.access_programs = json(R"JSON({"vendor":"value"})JSON");
+    params.background = json(R"JSON({"vendor":"value"})JSON");
+    params.context_management = json(R"JSON({"vendor":"value"})JSON");
+    params.conversation = json(R"JSON({"vendor":"value"})JSON");
+    params.include = json(R"JSON({"vendor":"value"})JSON");
+    params.input = json(R"JSON({"vendor":"value"})JSON");
+    params.instructions = json(R"JSON({"vendor":"value"})JSON");
+    params.max_output_tokens = json(R"JSON({"vendor":"value"})JSON");
+    params.max_tool_calls = json(R"JSON({"vendor":"value"})JSON");
+    params.metadata = json(R"JSON({"vendor":"value"})JSON");
+    params.model = "value";
+    params.moderation = json(R"JSON({"vendor":"value"})JSON");
+    params.parallel_tool_calls = json(R"JSON({"vendor":"value"})JSON");
+    params.previous_response_id = json(R"JSON({"vendor":"value"})JSON");
+    params.prompt = json(R"JSON({"vendor":"value"})JSON");
+    params.prompt_cache_key = json(R"JSON({"vendor":"value"})JSON");
+    params.prompt_cache_options = json(R"JSON({"vendor":"value"})JSON");
+    params.prompt_cache_retention = json(R"JSON({"vendor":"value"})JSON");
+    params.reasoning = json(R"JSON({"vendor":"value"})JSON");
+    params.safety_identifier = json(R"JSON({"vendor":"value"})JSON");
+    params.service_tier = json(R"JSON({"vendor":"value"})JSON");
+    params.store = json(R"JSON({"vendor":"value"})JSON");
+    params.stream = false;
+    params.stream_options = json(R"JSON({"vendor":"value"})JSON");
+    params.temperature = json(R"JSON({"vendor":"value"})JSON");
+    params.text = json(R"JSON({"vendor":"value"})JSON");
+    params.tool_choice = json(R"JSON({"vendor":"value"})JSON");
+    params.tools = json(R"JSON({"vendor":"value"})JSON");
+    params.top_logprobs = json(R"JSON({"vendor":"value"})JSON");
+    params.top_p = json(R"JSON({"vendor":"value"})JSON");
+    params.truncation = json(R"JSON({"vendor":"value"})JSON");
+    params.user = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","access_programs":{},"created_at":0.5,"error":{},"incomplete_details":{},"instructions":[],"metadata":{},"model":"resource","object":"resource","output":[],"parallel_tool_calls":true,"temperature":{},"tool_choice":{},"tools":[],"top_p":{},"background":{},"completed_at":{},"conversation":{},"max_output_tokens":{},"max_tool_calls":{},"moderation":{},"previous_response_id":{},"prompt":{},"prompt_cache_diagnostics":{},"prompt_cache_key":{},"prompt_cache_options":{},"prompt_cache_retention":{},"reasoning":{},"safety_identifier":{},"service_tier":{},"status":{},"text":{},"tool_usage":{},"top_logprobs":{},"truncation":{},"usage":{},"user":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().responses.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/responses");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(ResponsesRetrieveContract) {
+    // SDK contract: responses.retrieve.
+    types::responses::ResponseRetrieveParams params;
+    params.include = json(R"JSON({"vendor":"value"})JSON");
+    params.include_obfuscation = true;
+    params.starting_after = 7;
+    params.stream = false;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","access_programs":{},"created_at":0.5,"error":{},"incomplete_details":{},"instructions":[],"metadata":{},"model":"resource","object":"resource","output":[],"parallel_tool_calls":true,"temperature":{},"tool_choice":{},"tools":[],"top_p":{},"background":{},"completed_at":{},"conversation":{},"max_output_tokens":{},"max_tool_calls":{},"moderation":{},"previous_response_id":{},"prompt":{},"prompt_cache_diagnostics":{},"prompt_cache_key":{},"prompt_cache_options":{},"prompt_cache_retention":{},"reasoning":{},"safety_identifier":{},"service_tier":{},"status":{},"text":{},"tool_usage":{},"top_logprobs":{},"truncation":{},"usage":{},"user":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().responses.Retrieve("response_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/responses/response_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(ResponsesDeleteContract) {
+    // SDK contract: responses.delete.
+    types::responses::ResponsesDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().responses.Delete("response_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/responses/response_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
+DROGON_TEST(ResponsesCancelContract) {
+    // SDK contract: responses.cancel.
+    types::responses::ResponsesCancelParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","access_programs":{},"created_at":0.5,"error":{},"incomplete_details":{},"instructions":[],"metadata":{},"model":"resource","object":"resource","output":[],"parallel_tool_calls":true,"temperature":{},"tool_choice":{},"tools":[],"top_p":{},"background":{},"completed_at":{},"conversation":{},"max_output_tokens":{},"max_tool_calls":{},"moderation":{},"previous_response_id":{},"prompt":{},"prompt_cache_diagnostics":{},"prompt_cache_key":{},"prompt_cache_options":{},"prompt_cache_retention":{},"reasoning":{},"safety_identifier":{},"service_tier":{},"status":{},"text":{},"tool_usage":{},"top_logprobs":{},"truncation":{},"usage":{},"user":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().responses.Cancel("response_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/responses/response_id-value/cancel");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(ResponsesCompactContract) {
+    // SDK contract: responses.compact.
+    types::responses::ResponseCompactParams params;
+    params.model = json(R"JSON({"vendor":"value"})JSON");
+    params.input = json(R"JSON({"vendor":"value"})JSON");
+    params.instructions = json(R"JSON({"vendor":"value"})JSON");
+    params.previous_response_id = json(R"JSON({"vendor":"value"})JSON");
+    params.prompt_cache_key = json(R"JSON({"vendor":"value"})JSON");
+    params.prompt_cache_options = json(R"JSON({"vendor":"value"})JSON");
+    params.prompt_cache_retention = json(R"JSON({"vendor":"value"})JSON");
+    params.service_tier = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"object":"resource","output":[],"usage":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().responses.Compact(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/responses/compact");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
