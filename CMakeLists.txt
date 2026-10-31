@@ -64,6 +64,10 @@ endif()
 if(DROGON_OPENAI_INSTALL)
     set(PACKAGE_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
+    install(
+        FILES tools/OPENAI-PYTHON-LICENSE
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/${PROJECT_NAME}
+    )
 
     install(
         TARGETS ${PROJECT_NAME}
