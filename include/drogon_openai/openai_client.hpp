@@ -13,6 +13,7 @@
 #include "drogon_openai/details/chat.hpp"
 #include "drogon_openai/details/conversations.hpp"
 #include "drogon_openai/details/embeddings.hpp"
+#include "drogon_openai/details/files.hpp"
 #include "drogon_openai/details/models.hpp"
 #include "drogon_openai/details/moderations.hpp"
 #include "drogon_openai/details/responses.hpp"
@@ -86,6 +87,7 @@ namespace drogon_openai {
         details::Responses responses;         ///< SDK responses API group.
         details::Conversations conversations; ///< SDK conversations API group.
         details::Moderations moderations;     ///< SDK moderations API group.
+        details::Files files;                 ///< SDK files API group.
 
         /**
          * @brief Copy this client with selected settings overridden.
