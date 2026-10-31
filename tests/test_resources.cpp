@@ -2543,6 +2543,194 @@ DROGON_TEST(EvalsRunsCancelContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(ContainersCreateContract) {
+    // SDK contract: containers.create.
+    types::containers::ContainerCreateParams params;
+    params.name = "value";
+    params.expires_after = json(R"JSON({"vendor":"value"})JSON");
+    params.file_ids = std::vector<std::string>{};
+    params.memory_limit = "value";
+    params.network_policy = json(R"JSON({"vendor":"value"})JSON");
+    params.skills = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"name":"resource","object":"resource","status":"resource","expires_after":{},"last_active_at":{},"memory_limit":{},"network_policy":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().containers.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/containers");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(ContainersRetrieveContract) {
+    // SDK contract: containers.retrieve.
+    types::containers::ContainersRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"name":"resource","object":"resource","status":"resource","expires_after":{},"last_active_at":{},"memory_limit":{},"network_policy":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().containers.Retrieve("container_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/containers/container_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(ContainersListContract) {
+    // SDK contract: containers.list.
+    types::containers::ContainerListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.name = "value";
+    params.order = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"name":"resource","object":"resource","status":"resource","expires_after":{},"last_active_at":{},"memory_limit":{},"network_policy":{},"provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().containers.List(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/containers");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(ContainersDeleteContract) {
+    // SDK contract: containers.delete.
+    types::containers::ContainersDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().containers.Delete("container_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/containers/container_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
+DROGON_TEST(ContainersFilesContentRetrieveContract) {
+    // SDK contract: containers.files.content.retrieve.
+    types::containers::ContainersFilesContentRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = true;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().containers.files.content.Retrieve("file_id-value", "container_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/containers/container_id-value/files/file_id-value/content");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "application/binary");
+    CHECK(result->parsed == std::string("byte\0data", 9));
+}
+
+DROGON_TEST(ContainersFilesCreateContract) {
+    // SDK contract: containers.files.create.
+    types::containers::FileCreateParams params;
+    params.file = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.file_id = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","bytes":7,"container_id":"resource","created_at":7,"object":"resource","path":"resource","source":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().containers.files.Create("container_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/containers/container_id-value/files");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
+DROGON_TEST(ContainersFilesRetrieveContract) {
+    // SDK contract: containers.files.retrieve.
+    types::containers::ContainersFilesRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","bytes":7,"container_id":"resource","created_at":7,"object":"resource","path":"resource","source":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().containers.files.Retrieve("file_id-value", "container_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/containers/container_id-value/files/file_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(ContainersFilesListContract) {
+    // SDK contract: containers.files.list.
+    types::containers::FileListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","bytes":7,"container_id":"resource","created_at":7,"object":"resource","path":"resource","source":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().containers.files.List("container_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/containers/container_id-value/files");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(ContainersFilesDeleteContract) {
+    // SDK contract: containers.files.delete.
+    types::containers::ContainersFilesDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = true;
+    auto result{ drogon::sync_wait(client().containers.files.Delete("file_id-value", "container_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/containers/container_id-value/files/file_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("accept") == "*/*");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.

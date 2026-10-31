@@ -13,6 +13,7 @@
 #include "drogon_openai/details/audio.hpp"
 #include "drogon_openai/details/batches.hpp"
 #include "drogon_openai/details/chat.hpp"
+#include "drogon_openai/details/containers.hpp"
 #include "drogon_openai/details/conversations.hpp"
 #include "drogon_openai/details/embeddings.hpp"
 #include "drogon_openai/details/evals.hpp"
@@ -108,6 +109,7 @@ namespace drogon_openai {
         details::Live live;                   ///< SDK live API group.
         details::FineTuning fine_tuning;      ///< SDK fine_tuning API group.
         details::Evals evals;                 ///< SDK evals API group.
+        details::Containers containers;       ///< SDK containers API group.
 
         /**
          * @brief Copy this client with selected settings overridden.
