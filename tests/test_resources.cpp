@@ -3197,6 +3197,28 @@ DROGON_TEST(DecisionsCreateContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(ContentProvenanceChecksCreateContract) {
+    // SDK contract: content_provenance_checks.create.
+    types::content_provenance_checks::ContentProvenanceCheckCreateParams params;
+    params.file = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"created_at":7,"object":"resource","results":[],"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().content_provenance_checks.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/content_provenance_checks");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.

@@ -14,6 +14,7 @@
 #include "drogon_openai/details/batches.hpp"
 #include "drogon_openai/details/chat.hpp"
 #include "drogon_openai/details/containers.hpp"
+#include "drogon_openai/details/content_provenance_checks.hpp"
 #include "drogon_openai/details/conversations.hpp"
 #include "drogon_openai/details/decisions.hpp"
 #include "drogon_openai/details/embeddings.hpp"
@@ -94,28 +95,29 @@ namespace drogon_openai {
          */
         explicit OpenAI(OpenAIConfig config);
 
-        details::Chat chat;                   ///< Chat API group.
-        details::Models models;               ///< SDK models API group.
-        details::Embeddings embeddings;       ///< SDK embeddings API group.
-        details::TextCompletions completions; ///< SDK completions API group.
-        details::Responses responses;         ///< SDK responses API group.
-        details::Conversations conversations; ///< SDK conversations API group.
-        details::Moderations moderations;     ///< SDK moderations API group.
-        details::Files files;                 ///< SDK files API group.
-        details::Uploads uploads;             ///< SDK uploads API group.
-        details::Images images;               ///< SDK images API group.
-        details::Audio audio;                 ///< SDK audio API group.
-        details::Batches batches;             ///< SDK batches API group.
-        details::VectorStores vector_stores;  ///< SDK vector_stores API group.
-        details::Webhooks webhooks;           ///< SDK webhooks API group.
-        details::Realtime realtime;           ///< SDK realtime API group.
-        details::Live live;                   ///< SDK live API group.
-        details::FineTuning fine_tuning;      ///< SDK fine_tuning API group.
-        details::Evals evals;                 ///< SDK evals API group.
-        details::Containers containers;       ///< SDK containers API group.
-        details::Videos videos;               ///< SDK videos API group.
-        details::Skills skills;               ///< SDK skills API group.
-        details::Decisions decisions;         ///< SDK decisions API group.
+        details::Chat chat;                                         ///< Chat API group.
+        details::Models models;                                     ///< SDK models API group.
+        details::Embeddings embeddings;                             ///< SDK embeddings API group.
+        details::TextCompletions completions;                       ///< SDK completions API group.
+        details::Responses responses;                               ///< SDK responses API group.
+        details::Conversations conversations;                       ///< SDK conversations API group.
+        details::Moderations moderations;                           ///< SDK moderations API group.
+        details::Files files;                                       ///< SDK files API group.
+        details::Uploads uploads;                                   ///< SDK uploads API group.
+        details::Images images;                                     ///< SDK images API group.
+        details::Audio audio;                                       ///< SDK audio API group.
+        details::Batches batches;                                   ///< SDK batches API group.
+        details::VectorStores vector_stores;                        ///< SDK vector_stores API group.
+        details::Webhooks webhooks;                                 ///< SDK webhooks API group.
+        details::Realtime realtime;                                 ///< SDK realtime API group.
+        details::Live live;                                         ///< SDK live API group.
+        details::FineTuning fine_tuning;                            ///< SDK fine_tuning API group.
+        details::Evals evals;                                       ///< SDK evals API group.
+        details::Containers containers;                             ///< SDK containers API group.
+        details::Videos videos;                                     ///< SDK videos API group.
+        details::Skills skills;                                     ///< SDK skills API group.
+        details::Decisions decisions;                               ///< SDK decisions API group.
+        details::ContentProvenanceChecks content_provenance_checks; ///< SDK content_provenance_checks API group.
 
         /**
          * @brief Copy this client with selected settings overridden.
