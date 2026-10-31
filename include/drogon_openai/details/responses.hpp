@@ -221,5 +221,16 @@ namespace drogon_openai::details {
         [[nodiscard]] auto Parse(
             types::responses::ResponsesCreateParams params
         ) const -> drogon::Task<Result<types::responses::Response>>;
+
+        /**
+         * @brief Accumulate Responses events and return the final resource.
+         * @param params Owned operation parameters.
+         * @param callback Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Stream(
+            types::responses::ResponsesCreateParams params,
+            ApiEventCallback callback = {}
+        ) const -> drogon::Task<Result<types::responses::Response>>;
     };
 } // namespace drogon_openai::details

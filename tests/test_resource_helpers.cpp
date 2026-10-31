@@ -205,6 +205,37 @@ DROGON_TEST(ResponsesParseKeepsSchemaAndStrictArguments) {
     CHECK(nonstrict.error().kind == ErrorKind::InvalidRequest);
 }
 
+DROGON_TEST(ResponsesStreamIsIncrementalAndDetectsTruncation) {
+    types::responses::ResponsesCreateParams params;
+    params.model = "fake";
+    bool early{};
+    std::string text;
+    auto result{ drogon::sync_wait(client().responses.Stream(params, [&](ApiStreamEvent const& event) -> Result<bool> {
+        if (event.type == "response.output_text.delta") {
+            early = !g_stream_finished;
+            text += event.data["delta"].asString();
+        }
+        return true;
+    })) };
+    REQUIRE(result);
+    CHECK(early);
+    CHECK(text == "世界");
+    CHECK(result->id == "resp");
+    CHECK(result->raw["provider"] == "retained");
+    CHECK(result->_request_id == "req-stream");
+    params.extra_body["scenario"] = "truncated";
+    auto truncated{ drogon::sync_wait(client().responses.Stream(params)) };
+    REQUIRE(!truncated);
+    CHECK(truncated.error().kind == ErrorKind::ResponseValidation);
+    CHECK(truncated.error().request_id == "req-stream");
+    auto cancelled{ drogon::sync_wait(client().responses.Stream({}, [](ApiStreamEvent const&) -> Result<bool> { return false; })) };
+    REQUIRE(cancelled);
+    CHECK(cancelled->id == "resp");
+    auto thrown{ drogon::sync_wait(client().responses.CreateStream({}, [](ApiStreamEvent const&) -> Result<bool> { throw std::runtime_error{ "consumer failed" }; })) };
+    REQUIRE(!thrown);
+    CHECK(thrown.error().kind == ErrorKind::InvalidRequest);
+}
+
 /**
  * @brief Run resource helpers against the local app.
  * @param argc Framework argument count.

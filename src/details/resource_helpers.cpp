@@ -158,4 +158,66 @@ namespace drogon_openai::details {
         co_return std::move(response->parsed);
     }
 
+    /**
+     * @brief Accumulate Responses events and return the final resource.
+     * @param params Owned operation parameters.
+     * @param callback Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto Responses::Stream(
+        types::responses::ResponsesCreateParams params,
+        ApiEventCallback callback
+    ) const -> drogon::Task<Result<types::responses::Response>> {
+
+        auto group{ *this };
+        auto valid{ validate_response_parse(params, false) };
+        if (!valid) {
+            co_return std::unexpected{ std::move(valid.error()) };
+        }
+        Json::Value snapshot{ Json::objectValue };
+        auto stream{ co_await group.CreateStream(params, [&](ApiStreamEvent const& event) -> Result<bool> {
+            auto const& data{ event.data };
+            if (data["response"].isObject()) {
+                snapshot = data["response"];
+            }
+            auto const index{ data["output_index"].isUInt() ? data["output_index"].asUInt() : 0u };
+            auto const content{ data["content_index"].isUInt() ? data["content_index"].asUInt() : 0u };
+            if (index > 100000 || content > 100000) {
+                return std::unexpected{ Error{ .kind = ErrorKind::ResponseValidation, .message = "stream output index is out of range" } };
+            }
+            if (event.type == "response.output_item.added" || event.type == "response.output_item.done") {
+                snapshot["output"][index] = data["item"];
+            } else if (event.type == "response.content_part.added" || event.type == "response.content_part.done") {
+                snapshot["output"][index]["content"][content] = data["part"];
+            } else if (event.type == "response.output_text.delta" || event.type == "response.refusal.delta") {
+                snapshot["output"][index]["type"] = "message";
+                auto const field{ event.type == "response.output_text.delta" ? "text" : "refusal" };
+                auto& part{ snapshot["output"][index]["content"][content] };
+                part["type"] = event.type == "response.output_text.delta" ? "output_text" : "refusal";
+                if (data["delta"].isString()) {
+                    part[field] = (part[field].isString() ? part[field].asString() : "") + data["delta"].asString();
+                }
+            } else if (event.type == "response.function_call_arguments.delta" && data["delta"].isString()) {
+                auto& arguments{ snapshot["output"][index]["arguments"] };
+                arguments = (arguments.isString() ? arguments.asString() : "") + data["delta"].asString();
+            }
+            return callback ? callback(event) : Result<bool>{ true };
+        }) };
+        if (!stream) {
+            co_return std::unexpected{ std::move(stream.error()) };
+        }
+        auto response{ types::responses::Response::FromJson(stream->response.value_or(snapshot)) };
+        if (!response) {
+            co_return std::unexpected{ std::move(response.error()) };
+        }
+        response->_request_id = stream->_request_id;
+        if (!stream->cancelled) {
+            auto parsed{ parse_response(*response, params) };
+            if (!parsed) {
+                co_return std::unexpected{ std::move(parsed.error()) };
+            }
+        }
+        co_return std::move(*response);
+    }
+
 } // namespace drogon_openai::details
