@@ -15,6 +15,7 @@
 #include "drogon_openai/details/chat.hpp"
 #include "drogon_openai/details/conversations.hpp"
 #include "drogon_openai/details/embeddings.hpp"
+#include "drogon_openai/details/evals.hpp"
 #include "drogon_openai/details/files.hpp"
 #include "drogon_openai/details/fine_tuning.hpp"
 #include "drogon_openai/details/images.hpp"
@@ -106,6 +107,7 @@ namespace drogon_openai {
         details::Realtime realtime;           ///< SDK realtime API group.
         details::Live live;                   ///< SDK live API group.
         details::FineTuning fine_tuning;      ///< SDK fine_tuning API group.
+        details::Evals evals;                 ///< SDK evals API group.
 
         /**
          * @brief Copy this client with selected settings overridden.

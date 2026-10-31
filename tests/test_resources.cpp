@@ -2291,6 +2291,258 @@ DROGON_TEST(FineTuningJobsResumeContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(EvalsCreateContract) {
+    // SDK contract: evals.create.
+    types::evals::EvalCreateParams params;
+    params.data_source_config = json(R"JSON({"vendor":"value"})JSON");
+    params.testing_criteria = json(R"JSON({"vendor":"value"})JSON");
+    params.metadata = json(R"JSON({"vendor":"value"})JSON");
+    params.name = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"data_source_config":{},"metadata":{},"name":"resource","object":"resource","testing_criteria":[],"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsRetrieveContract) {
+    // SDK contract: evals.retrieve.
+    types::evals::EvalsRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"data_source_config":{},"metadata":{},"name":"resource","object":"resource","testing_criteria":[],"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.Retrieve("eval_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals/eval_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsUpdateContract) {
+    // SDK contract: evals.update.
+    types::evals::EvalUpdateParams params;
+    params.metadata = json(R"JSON({"vendor":"value"})JSON");
+    params.name = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"data_source_config":{},"metadata":{},"name":"resource","object":"resource","testing_criteria":[],"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.Update("eval_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals/eval_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsListContract) {
+    // SDK contract: evals.list.
+    types::evals::EvalListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.order_by = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"data_source_config":{},"metadata":{},"name":"resource","object":"resource","testing_criteria":[],"provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.List(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsDeleteContract) {
+    // SDK contract: evals.delete.
+    types::evals::EvalsDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"deleted":true,"eval_id":"resource","object":"resource","id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.Delete("eval_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals/eval_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsRunsOutputItemsRetrieveContract) {
+    // SDK contract: evals.runs.output_items.retrieve.
+    types::evals::EvalsRunsOutputItemsRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"datasource_item":{},"datasource_item_id":7,"eval_id":"resource","object":"resource","results":[],"run_id":"resource","sample":{},"status":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.runs.output_items.Retrieve("output_item_id-value", "eval_id-value", "run_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals/eval_id-value/runs/run_id-value/output_items/output_item_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsRunsOutputItemsListContract) {
+    // SDK contract: evals.runs.output_items.list.
+    types::evals::OutputItemListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.status = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"datasource_item":{},"datasource_item_id":7,"eval_id":"resource","object":"resource","results":[],"run_id":"resource","sample":{},"status":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.runs.output_items.List("run_id-value", "eval_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals/eval_id-value/runs/run_id-value/output_items");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsRunsCreateContract) {
+    // SDK contract: evals.runs.create.
+    types::evals::RunCreateParams params;
+    params.data_source = json(R"JSON({"vendor":"value"})JSON");
+    params.metadata = json(R"JSON({"vendor":"value"})JSON");
+    params.name = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"data_source":{},"error":{},"eval_id":"resource","metadata":{},"model":"resource","name":"resource","object":"resource","per_model_usage":[],"per_testing_criteria_results":[],"report_url":"resource","result_counts":{},"status":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.runs.Create("eval_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals/eval_id-value/runs");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsRunsRetrieveContract) {
+    // SDK contract: evals.runs.retrieve.
+    types::evals::EvalsRunsRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"data_source":{},"error":{},"eval_id":"resource","metadata":{},"model":"resource","name":"resource","object":"resource","per_model_usage":[],"per_testing_criteria_results":[],"report_url":"resource","result_counts":{},"status":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.runs.Retrieve("run_id-value", "eval_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals/eval_id-value/runs/run_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsRunsListContract) {
+    // SDK contract: evals.runs.list.
+    types::evals::RunListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.status = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"data_source":{},"error":{},"eval_id":"resource","metadata":{},"model":"resource","name":"resource","object":"resource","per_model_usage":[],"per_testing_criteria_results":[],"report_url":"resource","result_counts":{},"status":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.runs.List("eval_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals/eval_id-value/runs");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsRunsDeleteContract) {
+    // SDK contract: evals.runs.delete.
+    types::evals::EvalsRunsDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"deleted":{},"object":{},"run_id":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.runs.Delete("run_id-value", "eval_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals/eval_id-value/runs/run_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(EvalsRunsCancelContract) {
+    // SDK contract: evals.runs.cancel.
+    types::evals::EvalsRunsCancelParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"data_source":{},"error":{},"eval_id":"resource","metadata":{},"model":"resource","name":"resource","object":"resource","per_model_usage":[],"per_testing_criteria_results":[],"report_url":"resource","result_counts":{},"status":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().evals.runs.Cancel("run_id-value", "eval_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/evals/eval_id-value/runs/run_id-value/cancel");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
