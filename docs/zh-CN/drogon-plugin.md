@@ -216,3 +216,11 @@ Chat Completions 之外的 23 个根资源已实现，完整接口、字段约�
 | test_deepseek | 真实接口成功和错误 key 的 401；需要 DEEPSEEK_API_KEY，否则以 77 跳过；带 live 标签。 |
 
 行为对照 [openai-python 3.41.0](https://github.com/openai/openai-python/tree/v3.41.0/src/openai)、[OpenAI Chat Completions 官方参考](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create) 和 [DeepSeek Chat Completions 文档](https://api-docs.deepseek.com/api/create-chat-completion/)。
+
+## HTTP 请求观察
+
+应用可通过 `OpenAIConfig::http_trace or OpenAI::WithOptions({ .http_trace = callback })` 注册回调。每次出站 HTTP 尝试结束后，回调收到拥有数据的 `HttpTrace`，包括非 2xx 响应和连接失败。回调在请求所在的事件循环上执行，不应阻塞；并发请求可能并发调用它。回调异常会被忽略，不改变请求结果或重试行为。
+
+记录包含方法、URL、HTTP 状态（连接失败为 0）、耗时毫秒数、错误摘要以及有界的请求/响应正文。正文最多保留 64 KiB，附带截断标志，并保留完整的 UTF-8 前缀。记录不含 Authorization 头，正文中的已配置 bearer 凭据也会被隐藏。应用在公开诊断数据前还应去除业务正文中的其他密钥和图片。回调只允许通过代码设置，不从 config.json 读取。
+
+流式响应只保留有界的观察前缀，每次重试分别记录。WithOptions 默认继承观察器，也可替换或清除。离线回归测试位于 `test_client`。

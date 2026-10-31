@@ -25,6 +25,28 @@ namespace drogon_openai::details {
     namespace {
 
         /**
+         * @brief Retain a UTF-8 prefix and redact the configured credential from diagnostics.
+         * @param text Original request or response text.
+         * @param secret Credential to remove when nonempty.
+         * @return At most 64 KiB without a partial trailing UTF-8 code point.
+         */
+        auto trace_prefix(std::string_view text, std::string const& secret) -> std::string {
+            auto size{ (std::min)(text.size(), std::size_t{ 65536 }) };
+            while (size < text.size() && size > 0 && (static_cast<unsigned char>(text[size]) & 0xc0) == 0x80) {
+                --size;
+            }
+            std::string result{ text.substr(0, size) };
+            if (!secret.empty()) {
+                std::size_t offset{};
+                while ((offset = result.find(secret, offset)) != std::string::npos) {
+                    result.replace(offset, secret.size(), "[redacted]");
+                    offset += 10;
+                }
+            }
+            return result;
+        }
+
+        /**
          * @brief Merge headers using case-insensitive names.
          * @param destination Lowercase headers.
          * @param source Headers overriding existing values.
@@ -371,10 +393,17 @@ namespace drogon_openai::details {
             append_query(target, key, query[key]);
         }
         bool started{};
+        std::string trace_stream;
+        bool trace_stream_truncated{};
         BodyCallback consumer;
         if (on_data) {
-            consumer = [&started, &on_data](std::string_view bytes, Headers const& fields) -> Result<bool> {
+            consumer = [this, &started, &on_data, &trace_stream, &trace_stream_truncated](std::string_view bytes, Headers const& fields) -> Result<bool> {
                 started = true;
+                if (m_config.http_trace) {
+                    auto const available{ 65536 - trace_stream.size() };
+                    trace_stream.append(bytes.substr(0, available));
+                    trace_stream_truncated = trace_stream_truncated || bytes.size() > available;
+                }
                 try {
                     return on_data(bytes, fields);
                 } catch (std::exception const& exception) {
@@ -395,7 +424,27 @@ namespace drogon_openai::details {
             if (!attempt_headers.contains("x-stainless-retry-count")) {
                 attempt_headers["x-stainless-retry-count"] = std::to_string(attempt);
             }
+            auto const trace_start{ std::chrono::steady_clock::now() };
             auto result{ co_await exchange(WireRequest{ *endpoint, method, target, std::move(attempt_headers), body, timeout, consumer, deadline }) };
+            if (m_config.http_trace) {
+                auto const& response_body{ result ? (on_data && result->status_code >= 200 && result->status_code < 300 ? trace_stream : result->body) : result.error().body };
+                HttpTrace trace{
+                    .method = method,
+                    .url = std::string{ endpoint->tls ? "https://" : "http://" } + endpoint->authority + target,
+                    .status_code = result ? result->status_code : result.error().status_code,
+                    .elapsed_ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - trace_start).count(),
+                    .request_body = trace_prefix(body, m_config.api_key),
+                    .response_body = trace_prefix(response_body, m_config.api_key),
+                    .error = result ? "" : result.error().message,
+                    .request_truncated = body.size() > 65536,
+                    .response_truncated = response_body.size() > 65536 || trace_stream_truncated,
+                };
+                try {
+                    m_config.http_trace(trace);
+                } catch (...) {
+                    // Diagnostics must not change the request's result or retry policy.
+                }
+            }
             bool retryable{};
             Headers fields;
             if (result) {

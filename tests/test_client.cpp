@@ -6,6 +6,7 @@
 #include <chrono>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <drogon/MultiPart.h>
 #include <drogon/drogon.h>
@@ -370,6 +371,46 @@ DROGON_TEST(StatusPredicatesAndInvalidOptions) {
     invalid = drogon::sync_wait(client().Get("echo", { .extra_headers = { { "x-inject", "a\r\nb" } } }));
     REQUIRE(!invalid.has_value());
     CHECK(invalid.error().kind == ErrorKind::InvalidRequest);
+}
+
+DROGON_TEST(HttpTraceObserversCaptureAttemptsAndCannotChangeResults) {
+    std::vector<drogon_openai::HttpTrace> traces{};
+    auto observed{ client().WithOptions({ .http_trace = [&](drogon_openai::HttpTrace const& trace) { traces.push_back(trace); } }) };
+    auto result{ drogon::sync_wait(observed.Get("/echo")) };
+    REQUIRE(result.has_value());
+    REQUIRE(traces.size() == 1);
+    CHECK(traces[0].method == "GET");
+    CHECK(traces[0].url.ends_with("/client/echo"));
+    CHECK(traces[0].status_code == 200);
+    CHECK(traces[0].elapsed_ms >= 0);
+    CHECK(traces[0].response_body.find("client-key") == std::string::npos);
+    drogon_openai::RequestOptions options{};
+    options.max_retries = 2;
+    options.extra_headers["x-test-status"] = "503";
+    traces.clear();
+    CHECK(!drogon::sync_wait(observed.Get("/echo", options)).has_value());
+    REQUIRE(traces.size() == 3);
+    CHECK(traces.back().status_code == 503);
+    Json::Value body{};
+    body["large"] = std::string(70000, 'x');
+    traces.clear();
+    CHECK(drogon::sync_wait(observed.Post("/echo", body)).has_value());
+    REQUIRE(traces.size() == 1);
+    CHECK(traces[0].request_truncated);
+    CHECK(traces[0].response_truncated);
+    CHECK(traces[0].request_body.size() <= 65536);
+    CHECK(traces[0].response_body.size() <= 65536);
+    auto throwing{ observed.WithOptions({ .http_trace = [](drogon_openai::HttpTrace const&) { throw std::runtime_error{ "observer failed" }; } }) };
+    CHECK(drogon::sync_wait(throwing.Get("/echo")).has_value());
+    CHECK(!client().Config().http_trace);
+    auto cleared{ observed.WithOptions({ .http_trace = drogon_openai::HttpTraceCallback{} }) };
+    CHECK(!cleared.Config().http_trace);
+    traces.clear();
+    auto unreachable{ observed.WithOptions({ .base_url = "http://127.0.0.1:1", .max_retries = 0 }) };
+    CHECK(!drogon::sync_wait(unreachable.Get("/echo")).has_value());
+    REQUIRE(traces.size() == 1);
+    CHECK(traces[0].status_code == 0);
+    CHECK(!traces[0].error.empty());
 }
 
 /**

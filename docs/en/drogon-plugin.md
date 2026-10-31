@@ -216,3 +216,11 @@ The 23 root resources beyond Chat Completions are implemented. See [API resource
 | test_deepseek | Real API success and bad-key 401; requires DEEPSEEK_API_KEY, otherwise skips with code 77; labelled live. |
 
 Behavior was checked against [openai-python 3.41.0](https://github.com/openai/openai-python/tree/v3.41.0/src/openai), the [OpenAI Chat Completions reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create), and [DeepSeek's Chat Completions documentation](https://api-docs.deepseek.com/api/create-chat-completion/).
+
+## HTTP request observation
+
+Applications can set `OpenAIConfig::http_trace or OpenAI::WithOptions({ .http_trace = callback })` to receive an owned `HttpTrace` after every outgoing HTTP attempt, including non-2xx responses and transport failures. The callback runs on the request loop and must not block; concurrent requests may call it concurrently. Observer exceptions are ignored and never change request results or retries.
+
+Records contain the method, URL, HTTP status (zero for a connection failure), elapsed milliseconds, error text, and bounded request/response text. Bodies retain at most 64 KiB with truncation flags and UTF-8 prefix boundaries. Authorization headers are excluded, and the configured bearer credential is redacted from retained text. Applications must additionally redact their own payload secrets and images before exposing diagnostics. The observer is programmatic and is never accepted from config.json.
+
+Streaming bodies retain only a bounded observation prefix, and each retry emits a separate record. WithOptions inherits the observer unless explicitly replaced or cleared. Offline regression coverage is in `test_client`.

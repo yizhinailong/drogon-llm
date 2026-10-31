@@ -35,6 +35,7 @@
 #include "drogon_openai/details/videos.hpp"
 #include "drogon_openai/details/webhooks.hpp"
 #include "drogon_openai/error.hpp"
+#include "drogon_openai/http_trace.hpp"
 #include "drogon_openai/pagination.hpp"
 #include "drogon_openai/request_options.hpp"
 
@@ -54,22 +55,24 @@ namespace drogon_openai {
         std::string organization;                            ///< Optional OpenAI organization.
         std::string project;                                 ///< Optional OpenAI project.
         std::string webhook_secret;                          ///< Webhook signing secret, read from webhook_secret_env by the plugin.
+        HttpTraceCallback http_trace{};                      ///< Programmatic HTTP observer; never read from JSON.
     };
 
     /**
      * @brief Overrides used by `OpenAI::WithOptions` and `OpenAI::Copy`.
      */
     struct OpenAIOptions {
-        std::optional<std::string> base_url{};       ///< Endpoint override.
-        std::optional<std::string> api_key{};        ///< Bearer token override.
-        std::optional<std::string> model{};          ///< Default model override.
-        std::optional<int> max_retries{};            ///< Retry count override.
-        std::optional<Timeout> timeout{};            ///< Phase timeout override.
-        std::optional<Headers> default_headers{};    ///< Headers merged with the original headers.
-        std::optional<Json::Value> default_query{};  ///< Query parameters merged with the originals.
-        std::optional<std::string> organization{};   ///< Organization override; empty clears it.
-        std::optional<std::string> project{};        ///< Project override; empty clears it.
-        std::optional<std::string> webhook_secret{}; ///< Webhook signing secret override.
+        std::optional<std::string> base_url{};         ///< Endpoint override.
+        std::optional<std::string> api_key{};          ///< Bearer token override.
+        std::optional<std::string> model{};            ///< Default model override.
+        std::optional<int> max_retries{};              ///< Retry count override.
+        std::optional<Timeout> timeout{};              ///< Phase timeout override.
+        std::optional<Headers> default_headers{};      ///< Headers merged with the original headers.
+        std::optional<Json::Value> default_query{};    ///< Query parameters merged with the originals.
+        std::optional<std::string> organization{};     ///< Organization override; empty clears it.
+        std::optional<std::string> project{};          ///< Project override; empty clears it.
+        std::optional<std::string> webhook_secret{};   ///< Webhook signing secret override.
+        std::optional<HttpTraceCallback> http_trace{}; ///< HTTP observer override; an empty callback clears it.
     };
 
     /**

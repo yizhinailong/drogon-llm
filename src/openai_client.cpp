@@ -98,6 +98,9 @@ namespace drogon_openai {
         if (options.organization) {
             config.organization = std::move(*options.organization);
         }
+        if (options.http_trace) {
+            config.http_trace = std::move(*options.http_trace);
+        }
         if (options.webhook_secret) {
             config.webhook_secret = std::move(*options.webhook_secret);
         }
