@@ -71,7 +71,7 @@ namespace drogon_openai {
      * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
      */
     OpenAI::OpenAI(OpenAIConfig config)
-        : m_transport{ std::make_shared<details::Transport>(std::move(config)) }, chat{ m_transport }, models{ m_transport }, embeddings{ m_transport } {}
+        : m_transport{ std::make_shared<details::Transport>(std::move(config)) }, chat{ m_transport }, models{ m_transport }, embeddings{ m_transport }, completions{ m_transport } {}
 
     /**
      * @brief Copy this client with selected settings overridden.

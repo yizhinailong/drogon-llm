@@ -141,6 +141,43 @@ DROGON_TEST(EmbeddingsCreateContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(TextCompletionsCreateContract) {
+    // SDK contract: completions.create.
+    types::completions::CompletionsCreateParams params;
+    params.model = "value";
+    params.prompt = json(R"JSON({"vendor":"value"})JSON");
+    params.best_of = json(R"JSON({"vendor":"value"})JSON");
+    params.echo = json(R"JSON({"vendor":"value"})JSON");
+    params.frequency_penalty = json(R"JSON({"vendor":"value"})JSON");
+    params.logit_bias = json(R"JSON({"vendor":"value"})JSON");
+    params.logprobs = json(R"JSON({"vendor":"value"})JSON");
+    params.max_tokens = json(R"JSON({"vendor":"value"})JSON");
+    params.n = json(R"JSON({"vendor":"value"})JSON");
+    params.presence_penalty = json(R"JSON({"vendor":"value"})JSON");
+    params.seed = json(R"JSON({"vendor":"value"})JSON");
+    params.stop = json(R"JSON({"vendor":"value"})JSON");
+    params.stream = false;
+    params.stream_options = json(R"JSON({"vendor":"value"})JSON");
+    params.suffix = json(R"JSON({"vendor":"value"})JSON");
+    params.temperature = json(R"JSON({"vendor":"value"})JSON");
+    params.top_p = json(R"JSON({"vendor":"value"})JSON");
+    params.user = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","choices":[],"created":7,"model":"resource","object":"resource","system_fingerprint":{},"usage":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().completions.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/completions");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.

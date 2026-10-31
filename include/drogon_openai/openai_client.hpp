@@ -13,6 +13,7 @@
 #include "drogon_openai/details/chat.hpp"
 #include "drogon_openai/details/embeddings.hpp"
 #include "drogon_openai/details/models.hpp"
+#include "drogon_openai/details/text_completions.hpp"
 #include "drogon_openai/error.hpp"
 #include "drogon_openai/pagination.hpp"
 #include "drogon_openai/request_options.hpp"
@@ -75,9 +76,10 @@ namespace drogon_openai {
          */
         explicit OpenAI(OpenAIConfig config);
 
-        details::Chat chat;             ///< Chat API group.
-        details::Models models;         ///< SDK models API group.
-        details::Embeddings embeddings; ///< SDK embeddings API group.
+        details::Chat chat;                   ///< Chat API group.
+        details::Models models;               ///< SDK models API group.
+        details::Embeddings embeddings;       ///< SDK embeddings API group.
+        details::TextCompletions completions; ///< SDK completions API group.
 
         /**
          * @brief Copy this client with selected settings overridden.
