@@ -343,7 +343,7 @@ DROGON_TEST(CreateSendsConfiguredModelAndMessages) {
 }
 
 DROGON_TEST(CreateSendsSetOptionalFields) {
-    auto const completion{ drogon::sync_wait(plugin_client().chat.completions.Create({
+    drogon_openai::ChatCompletionCreateParams params{
         .messages = { { .role = "user", .content = "Hello!" } },
         .model = "other-model",
         .frequency_penalty = 0.5,
@@ -351,7 +351,38 @@ DROGON_TEST(CreateSendsSetOptionalFields) {
         .presence_penalty = -0.5,
         .temperature = 0.25,
         .top_p = 0.75,
-    })) };
+    };
+    Json::Value object{ Json::objectValue };
+    object["name"] = "test";
+    params.tools = std::vector<drogon_openai::ChatCompletionToolParam>{ { .function = object }, { .type = "custom", .custom = object } };
+    params.tool_choice = "auto";
+    params.parallel_tool_calls = false;
+    params.response_format = object;
+    params.stop = "STOP";
+    params.max_completion_tokens = 100;
+    params.n = 2;
+    params.seed = 1;
+    params.logprobs = true;
+    params.top_logprobs = 2;
+    params.logit_bias = object;
+    params.reasoning_effort = "high";
+    params.verbosity = "low";
+    params.safety_identifier = "test-user";
+    params.prompt_cache_key = "test-cache";
+    params.user = "test-user";
+    params.metadata = object;
+    params.store = true;
+    params.service_tier = "priority";
+    params.modalities = std::vector<std::string>{ "text", "audio" };
+    params.audio = object;
+    params.prediction = object;
+    params.web_search_options = object;
+    params.prompt_cache_retention = "24h";
+    params.prompt_cache_options = object;
+    params.moderation = object;
+    params.timeout = drogon_openai::Timeout{ 10.0 };
+    params.max_retries = 0;
+    auto const completion{ drogon::sync_wait(plugin_client().chat.completions.Create(params)) };
     REQUIRE(completion.has_value());
     CHECK(completion->model == "other-model");
 
@@ -362,6 +393,12 @@ DROGON_TEST(CreateSendsSetOptionalFields) {
     CHECK(request.body["presence_penalty"].asDouble() == -0.5);
     CHECK(request.body["temperature"].asDouble() == 0.25);
     CHECK(request.body["top_p"].asDouble() == 0.75);
+    for (auto const* field : { "tools", "tool_choice", "parallel_tool_calls", "response_format", "stop", "max_completion_tokens", "n", "seed", "logprobs", "top_logprobs", "logit_bias", "reasoning_effort", "verbosity", "safety_identifier", "prompt_cache_key", "user", "metadata", "store", "service_tier", "modalities", "audio", "prediction", "web_search_options", "prompt_cache_retention", "prompt_cache_options", "moderation" }) {
+        CHECK(request.body.isMember(field));
+    }
+    CHECK(request.body["parallel_tool_calls"] == false);
+    CHECK(!request.body.isMember("timeout"));
+    CHECK(!request.body.isMember("max_retries"));
 }
 
 DROGON_TEST(CreateMergesExtraBody) {

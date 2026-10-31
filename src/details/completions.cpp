@@ -1,9 +1,12 @@
 /**
  * @file completions.cpp
- * @brief Implement the chat completions API group that `Chat::completions` exposes.
+ * @brief Implement creation, parsing, streaming, and management of chat completions.
  */
 #include <utility>
 
+#include <json/writer.h>
+
+#include "details/chat_json.hpp"
 #include "details/transport.hpp"
 #include "drogon_openai/details/completions.hpp"
 
@@ -12,120 +15,92 @@ namespace drogon_openai::details {
     namespace {
 
         /**
-         * @brief Add `value` to `body` under `key` when it is set.
-         * @tparam T Value type that `Json::Value` can hold.
-         * @param body Request body to fill.
-         * @param key Field name.
-         * @param value Optional field value.
+         * @brief Carry response metadata into a decoding error.
+         * @tparam T HTTP response payload type.
+         * @param error Decoding error to enrich.
+         * @param response Original HTTP response.
+         * @return Error with original status, bytes, headers, and request ID.
          */
         template <typename T>
-        auto set_if(Json::Value& body, char const* key, std::optional<T> const& value) -> void {
-            if (value) {
-                body[key] = *value;
-            }
+        auto response_error(Error error, RawResponse<T> const& response) -> Error {
+            error.status_code = response.status_code;
+            error.body = response.body;
+            error.request_id = response.request_id;
+            error.headers = response.headers;
+            return error;
         }
 
         /**
-         * @brief Read a JSON string.
-         * @param value Field that should hold a string.
-         * @return The string, or unset if `value` is missing or not a string.
+         * @brief Convert chat request overrides into common transport options.
+         * @param params Chat parameters.
+         * @return HTTP request options.
          */
-        auto optional_string(Json::Value const& value) -> std::optional<std::string> {
-            if (!value.isString()) {
-                return std::nullopt;
-            }
-            return value.asString();
-        }
-
-        /**
-         * @brief Read a JSON integer.
-         * @param value Field that should hold an integer.
-         * @return The integer, or 0 if `value` is missing or not a 64-bit integer.
-         */
-        auto int64_or_zero(Json::Value const& value) -> std::int64_t {
-            return value.isInt64() ? value.asInt64() : 0;
-        }
-
-        /**
-         * @brief Build the `/chat/completions` request body.
-         * @param params Request fields.
-         * @param default_model Model sent when `params.model` is unset.
-         * @return OpenAI-format request body.
-         */
-        auto to_request_body(
-            ChatCompletionCreateParams const& params,
-            std::string const& default_model
-        ) -> Json::Value {
-            Json::Value body{ Json::objectValue };
-            body["model"] = params.model.value_or(default_model);
-            body["messages"] = Json::arrayValue;
-            for (auto const& message : params.messages) {
-                Json::Value item{ Json::objectValue };
-                item["role"] = message.role;
-                item["content"] = message.content;
-                body["messages"].append(std::move(item));
-            }
-            set_if(body, "frequency_penalty", params.frequency_penalty);
-            set_if(body, "max_tokens", params.max_tokens);
-            set_if(body, "presence_penalty", params.presence_penalty);
-            set_if(body, "temperature", params.temperature);
-            set_if(body, "top_p", params.top_p);
-            if (params.extra_body.isObject()) {
-                for (auto const& name : params.extra_body.getMemberNames()) {
-                    body[name] = params.extra_body[name];
-                }
-            }
-            return body;
-        }
-
-        /**
-         * @brief Build a `ChatCompletion` from the `/chat/completions` response body.
-         * @param root Parsed response body.
-         * @return The completion, or a `ResponseValidation` error if `choices` is not an
-         * array of objects that each hold a `message` object.
-         */
-        auto parse_chat_completion(Json::Value const& root) -> Result<ChatCompletion> {
-            auto const invalid{ [&root](char const* message) {
-                return std::unexpected{ Error{
-                    .kind = ErrorKind::ResponseValidation,
-                    .message = message,
-                    .body = root.toStyledString(),
-                } };
-            } };
-
-            if (!root.isObject() || !root["choices"].isArray()) {
-                return invalid("chat completion has no choices array");
-            }
-            ChatCompletion completion{
-                .id = optional_string(root["id"]).value_or(""),
-                .choices = {},
-                .created = int64_or_zero(root["created"]),
-                .model = optional_string(root["model"]).value_or(""),
-                .object = optional_string(root["object"]).value_or(""),
+        auto request_options(ChatCompletionCreateParams const& params) -> RequestOptions {
+            return {
+                .timeout = params.timeout,
+                .max_retries = params.max_retries,
+                .extra_headers = params.extra_headers,
+                .extra_query = params.extra_query,
             };
-            for (auto const& choice : root["choices"]) {
-                if (!choice.isObject() || !choice["message"].isObject()) {
-                    return invalid("chat completion has a choice without a message object");
+        }
+
+        /**
+         * @brief Merge object members with the second object taking precedence.
+         * @param target Object receiving fields.
+         * @param extra Additional fields; null means no overrides.
+         */
+        auto merge_fields(Json::Value& target, Json::Value const& extra) -> void {
+            if (extra.isObject()) {
+                for (auto const& key : extra.getMemberNames()) {
+                    target[key] = extra[key];
                 }
-                Json::Value const& message{ choice["message"] };
-                completion.choices.push_back(ChatCompletionChoice{
-                    .finish_reason = optional_string(choice["finish_reason"]).value_or(""),
-                    .index = int64_or_zero(choice["index"]),
-                    .message = {
-                        .role = optional_string(message["role"]).value_or(""),
-                        .content = optional_string(message["content"]),
-                        .reasoning_content = optional_string(message["reasoning_content"]),
-                    },
-                });
             }
-            if (Json::Value const& usage{ root["usage"] }; usage.isObject()) {
-                completion.usage = CompletionUsage{
-                    .completion_tokens = int64_or_zero(usage["completion_tokens"]),
-                    .prompt_tokens = int64_or_zero(usage["prompt_tokens"]),
-                    .total_tokens = int64_or_zero(usage["total_tokens"]),
-                };
+        }
+
+        /**
+         * @brief Decode an HTTP response as a typed completion with metadata.
+         * @param response Parsed HTTP response.
+         * @return Typed raw response or an enriched decoding error.
+         */
+        auto completion_response(
+            RawResponse<Json::Value> response
+        ) -> Result<RawResponse<ChatCompletion>> {
+            auto parsed{ parse_chat_completion(response.parsed) };
+            if (!parsed) {
+                return std::unexpected{ response_error(std::move(parsed.error()), response) };
             }
-            return completion;
+            parsed->_request_id = response.request_id;
+            return RawResponse<ChatCompletion>{
+                .status_code = response.status_code,
+                .headers = std::move(response.headers),
+                .body = std::move(response.body),
+                .parsed = std::move(*parsed),
+                .request_id = std::move(response.request_id),
+            };
+        }
+
+        /**
+         * @brief Create a completion using a transport owned by the coroutine frame.
+         * @param transport Shared endpoint and request defaults.
+         * @param params Owned request fields.
+         * @return Typed HTTP response or request/response error.
+         */
+        auto create_raw(
+            std::shared_ptr<Transport> transport,
+            ChatCompletionCreateParams params
+        ) -> drogon::Task<Result<RawResponse<ChatCompletion>>> {
+            auto body{ to_request_body(params, transport->Config().model) };
+            if (body.isMember("stream") && body["stream"].isBool() && body["stream"].asBool()) {
+                co_return std::unexpected{ Error{
+                    .kind = ErrorKind::InvalidRequest,
+                    .message = "use Stream for streaming chat completions",
+                } };
+            }
+            auto response{ co_await transport->Request("POST", "/chat/completions", std::move(body), request_options(params)) };
+            if (!response) {
+                co_return std::unexpected{ std::move(response.error()) };
+            }
+            co_return completion_response(std::move(*response));
         }
 
     } // namespace
@@ -138,24 +113,33 @@ namespace drogon_openai::details {
         : m_transport{ std::move(transport) } {}
 
     /**
-     * @brief Generate a reply to a conversation, like `await client.chat.completions.create()`.
-     * @param params Request fields, taken by value so they outlive the caller's frame.
-     * @return Task yielding the completion, or why the request failed.
-     * @note The request runs on the calling thread's event loop (the main loop when the
-     * thread runs none), so the coroutine resumes on the thread that awaited it. To block
-     * on it with `drogon::sync_wait()`, call from a thread that runs no event loop.
+     * @brief Generate a reply to a conversation.
+     * @param params Owned request fields and HTTP overrides.
+     * @return Completion or a request/response error.
+     * @note Requests and continuations use the awaiting thread's loop. Use `sync_wait`
+     * only on a thread without an event loop. Pass client handles to coroutines by value.
      */
     auto Completions::Create(
         ChatCompletionCreateParams params
     ) const -> drogon::Task<Result<ChatCompletion>> {
-        // Keep the transport in the coroutine frame in case this object dies mid-request.
-        auto const transport{ m_transport };
-        auto body{ to_request_body(params, transport->Config().model) };
-        auto response{ co_await transport->Request("POST", "/chat/completions", std::move(body), { .timeout = Timeout{ params.timeout } }) };
+        auto transport{ m_transport };
+        auto response{ co_await create_raw(std::move(transport), std::move(params)) };
         if (!response) {
             co_return std::unexpected{ std::move(response.error()) };
         }
-        co_return parse_chat_completion(response->parsed);
+        co_return std::move(response->parsed);
+    }
+
+    /**
+     * @brief Generate a reply and retain HTTP metadata and original response bytes.
+     * @param params Owned request fields and HTTP overrides.
+     * @return Raw response with a typed completion or an error with response metadata.
+     */
+    auto Completions::CreateRaw(
+        ChatCompletionCreateParams params
+    ) const -> drogon::Task<Result<RawResponse<ChatCompletion>>> {
+        auto transport{ m_transport };
+        co_return co_await create_raw(std::move(transport), std::move(params));
     }
 
 } // namespace drogon_openai::details
