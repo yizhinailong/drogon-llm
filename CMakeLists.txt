@@ -18,6 +18,8 @@ if(CMAKE_CXX_STANDARD STREQUAL "")
     unset(CMAKE_CXX_STANDARD)
 endif()
 
+find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+
 file(GLOB_RECURSE SOURCE CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
@@ -48,6 +50,8 @@ target_link_libraries(
     ${PROJECT_NAME}
     PUBLIC
     Drogon::Drogon
+    PRIVATE
+    OpenSSL::Crypto
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
@@ -59,6 +63,7 @@ endif()
 
 if(DROGON_OPENAI_INSTALL)
     set(PACKAGE_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
 
     install(
         TARGETS ${PROJECT_NAME}

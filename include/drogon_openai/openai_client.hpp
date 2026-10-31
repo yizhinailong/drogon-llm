@@ -53,21 +53,23 @@ namespace drogon_openai {
         Json::Value default_query{};                         ///< Query parameters applied to every request.
         std::string organization;                            ///< Optional OpenAI organization.
         std::string project;                                 ///< Optional OpenAI project.
+        std::string webhook_secret;                          ///< Webhook signing secret, read from webhook_secret_env by the plugin.
     };
 
     /**
      * @brief Overrides used by `OpenAI::WithOptions` and `OpenAI::Copy`.
      */
     struct OpenAIOptions {
-        std::optional<std::string> base_url{};      ///< Endpoint override.
-        std::optional<std::string> api_key{};       ///< Bearer token override.
-        std::optional<std::string> model{};         ///< Default model override.
-        std::optional<int> max_retries{};           ///< Retry count override.
-        std::optional<Timeout> timeout{};           ///< Phase timeout override.
-        std::optional<Headers> default_headers{};   ///< Headers merged with the original headers.
-        std::optional<Json::Value> default_query{}; ///< Query parameters merged with the originals.
-        std::optional<std::string> organization{};  ///< Organization override; empty clears it.
-        std::optional<std::string> project{};       ///< Project override; empty clears it.
+        std::optional<std::string> base_url{};       ///< Endpoint override.
+        std::optional<std::string> api_key{};        ///< Bearer token override.
+        std::optional<std::string> model{};          ///< Default model override.
+        std::optional<int> max_retries{};            ///< Retry count override.
+        std::optional<Timeout> timeout{};            ///< Phase timeout override.
+        std::optional<Headers> default_headers{};    ///< Headers merged with the original headers.
+        std::optional<Json::Value> default_query{};  ///< Query parameters merged with the originals.
+        std::optional<std::string> organization{};   ///< Organization override; empty clears it.
+        std::optional<std::string> project{};        ///< Project override; empty clears it.
+        std::optional<std::string> webhook_secret{}; ///< Webhook signing secret override.
     };
 
     /**
@@ -337,6 +339,8 @@ namespace drogon_openai {
      * (600 seconds, connect 5), `default_headers`, `default_query`,
      * `organization`, and `project`. `timeout` may also be an object with
      * `connect`, `read`, and `write` seconds; zero disables a phase timeout.
+     * `webhook_secret_env` optionally names an environment variable containing
+     * the signing secret for local webhook verification; it must be non-empty.
      *
      * Then fetch it once `app().run()` has started, e.g. from a beginning advice
      * or a handler: `drogon::app().getPlugin<drogon_openai::OpenAIClient>()`, and
@@ -352,6 +356,7 @@ namespace drogon_openai {
          * @brief Read the endpoint settings from the plugin's `config` object.
          * @param config The plugin's `config` object from config.json.
          * @throws std::invalid_argument If `base_url` or `model` is missing or empty,
+         * or if `api_key_env` or `webhook_secret_env` names an unset or empty
          * environment variable, or request defaults are invalid.
          */
         auto initAndStart(Json::Value const& config) -> void override;

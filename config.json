@@ -32,7 +32,8 @@
         "default_headers": {},
         "default_query": {},
         "organization": "",
-        "project": ""
+        "project": "",
+        "webhook_secret_env": ""
       }
     }
   ]

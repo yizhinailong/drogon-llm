@@ -196,5 +196,35 @@ namespace drogon_openai::details {
             std::string webhook_endpoint_id,
             types::webhooks::WebhookTestParams params = {}
         ) const -> drogon::Task<Result<RawResponse<types::webhooks::WebhookEndpointTestResult>>>;
+
+        /**
+         * @brief Verify the webhook HMAC and replay window before consuming its body.
+         * @param payload Owned operation parameters.
+         * @param headers Owned operation parameters.
+         * @param secret Owned operation parameters.
+         * @param tolerance Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto VerifySignature(
+            std::string payload,
+            Headers headers,
+            std::optional<std::string> secret = {},
+            int tolerance = 300
+        ) const -> Result<void>;
+
+        /**
+         * @brief Verify a webhook signature and decode the original JSON event.
+         * @param payload Owned operation parameters.
+         * @param headers Owned operation parameters.
+         * @param secret Owned operation parameters.
+         * @param tolerance Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Unwrap(
+            std::string payload,
+            Headers headers,
+            std::optional<std::string> secret = {},
+            int tolerance = 300
+        ) const -> Result<Json::Value>;
     };
 } // namespace drogon_openai::details

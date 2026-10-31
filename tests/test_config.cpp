@@ -93,6 +93,26 @@ DROGON_TEST(RejectsEmptyApiKeyEnv) {
     test_support::unset_env(EMPTY_ENV);
 }
 
+DROGON_TEST(WebhookSecretIsOptionalAndReadOnlyFromEnv) {
+    auto config{ minimal_config() };
+    config["webhook_secret"] = "ignored";
+    drogon_openai::OpenAIClient plugin;
+    plugin.initAndStart(config);
+    CHECK(plugin.Config().webhook_secret.empty());
+    constexpr char const* SECRET_ENV{ "DROGON_OPENAI_TEST_WEBHOOK_SECRET" };
+    test_support::set_env(SECRET_ENV, "test-signing-secret");
+    config["webhook_secret_env"] = SECRET_ENV;
+    plugin.initAndStart(config);
+    CHECK(plugin.Config().webhook_secret == "test-signing-secret");
+    test_support::unset_env(SECRET_ENV);
+    CHECK(rejection(config).contains("is unset or empty"));
+    test_support::set_env(SECRET_ENV, "");
+    CHECK(rejection(config).contains("is unset or empty"));
+    test_support::unset_env(SECRET_ENV);
+    config["webhook_secret_env"] = 42;
+    CHECK(rejection(config).contains("must be a string"));
+}
+
 DROGON_TEST(AcceptsTrackedConfigJson) {
     test_support::set_env(test_support::API_KEY_ENV, test_support::API_KEY);
     auto const root{ test_support::read_config() };

@@ -98,6 +98,9 @@ namespace drogon_openai {
         if (options.organization) {
             config.organization = std::move(*options.organization);
         }
+        if (options.webhook_secret) {
+            config.webhook_secret = std::move(*options.webhook_secret);
+        }
         if (options.project) {
             config.project = std::move(*options.project);
         }
@@ -529,7 +532,8 @@ namespace drogon_openai {
      * @brief Read the endpoint settings from the plugin's `config` object.
      * @param config The plugin's `config` object from config.json.
      * @throws std::invalid_argument If `base_url` or `model` is missing or empty,
-     * or if `api_key_env` names an unset or empty environment variable, or request defaults are invalid.
+     * or if `api_key_env` or `webhook_secret_env` names an unset or empty
+     * environment variable, or request defaults are invalid.
      */
     auto OpenAIClient::initAndStart(Json::Value const& config) -> void {
         m_config = OpenAIConfig{
@@ -540,6 +544,10 @@ namespace drogon_openai {
         if (m_config.base_url.empty() || m_config.model.empty()) {
             throw std::invalid_argument{ "drogon_openai::OpenAIClient: config needs non-empty base_url and model" };
         }
+        if (config.isMember("webhook_secret_env") && !config["webhook_secret_env"].isString()) {
+            throw std::invalid_argument{ "drogon_openai::OpenAIClient: webhook_secret_env must be a string" };
+        }
+        m_config.webhook_secret = read_api_key(config.get("webhook_secret_env", "").asString());
         auto invalid{ [] { throw std::invalid_argument{ "drogon_openai::OpenAIClient: invalid request defaults" }; } };
         if (config.isMember("max_retries")) {
             if (!config["max_retries"].isInt() || config["max_retries"].asInt() < 0) {

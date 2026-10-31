@@ -43,7 +43,7 @@ namespace {
      * @return Owned client.
      */
     auto client() -> OpenAI {
-        return OpenAI{ { .base_url = std::string{ test_support::SERVER_URL } + "/helpers", .model = "fake", .max_retries = 0 } };
+        return OpenAI{ { .base_url = std::string{ test_support::SERVER_URL } + "/helpers", .model = "fake", .max_retries = 0, .webhook_secret = "secret" } };
     }
 
     /**
@@ -283,6 +283,24 @@ DROGON_TEST(ChunkedUploadKeepsBinaryAndPartOrder) {
     REQUIRE(processed);
     CHECK(processed->status == "processed");
     CHECK(processed->_request_id == "req-file");
+}
+
+DROGON_TEST(WebhookVerificationUsesKnownSignatureAndRejectsReplay) {
+    std::string const payload{ R"JSON({"id":"evt_test","type":"response.completed","data":{"id":"resp"}})JSON" };
+    Headers headers{ { "Webhook-Id", "wh_test" }, { "Webhook-Timestamp", "1730000000" }, { "Webhook-Signature", "v1,incorrect v1,dUk3OyX7PedR/2YnYhE9IPx2qi/n6/wOZwvNZmzzzh4=" } };
+    auto valid{ client().webhooks.Unwrap(payload, headers, {}, INT_MAX) };
+    REQUIRE(valid);
+    CHECK((*valid)["data"]["id"] == "resp");
+    CHECK(client().webhooks.VerifySignature(payload, headers, "whsec_c2VjcmV0", INT_MAX));
+    auto modified{ client().webhooks.VerifySignature(payload + " ", headers, {}, INT_MAX) };
+    REQUIRE(!modified);
+    CHECK(modified.error().kind == ErrorKind::InvalidWebhookSignature);
+    CHECK(!client().webhooks.VerifySignature(payload, headers, {}, 0));
+    CHECK(!client().webhooks.VerifySignature(payload, {}, {}, INT_MAX));
+    CHECK(!client().webhooks.VerifySignature(payload, headers, "wrong", INT_MAX));
+    CHECK(!client().webhooks.VerifySignature(payload, headers, "whsec_!!!!", INT_MAX));
+    headers["Webhook-Timestamp"] = "not-a-timestamp";
+    CHECK(!client().webhooks.VerifySignature(payload, headers));
 }
 
 /**
