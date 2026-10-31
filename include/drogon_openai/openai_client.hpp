@@ -22,6 +22,7 @@
 #include "drogon_openai/details/responses.hpp"
 #include "drogon_openai/details/text_completions.hpp"
 #include "drogon_openai/details/uploads.hpp"
+#include "drogon_openai/details/vector_stores.hpp"
 #include "drogon_openai/error.hpp"
 #include "drogon_openai/pagination.hpp"
 #include "drogon_openai/request_options.hpp"
@@ -96,6 +97,7 @@ namespace drogon_openai {
         details::Images images;               ///< SDK images API group.
         details::Audio audio;                 ///< SDK audio API group.
         details::Batches batches;             ///< SDK batches API group.
+        details::VectorStores vector_stores;  ///< SDK vector_stores API group.
 
         /**
          * @brief Copy this client with selected settings overridden.

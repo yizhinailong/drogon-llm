@@ -1179,6 +1179,367 @@ DROGON_TEST(BatchesCancelContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(VectorStoresFileBatchesCreateContract) {
+    // SDK contract: vector_stores.file_batches.create.
+    types::vector_stores::FileBatchCreateParams params;
+    params.attributes = json(R"JSON({"vendor":"value"})JSON");
+    params.chunking_strategy = json(R"JSON({"vendor":"value"})JSON");
+    params.file_ids = std::vector<std::string>{};
+    params.files = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"file_counts":{},"object":"resource","status":"resource","vector_store_id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.file_batches.Create("vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/file_batches");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresFileBatchesRetrieveContract) {
+    // SDK contract: vector_stores.file_batches.retrieve.
+    types::vector_stores::VectorStoresFileBatchesRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"file_counts":{},"object":"resource","status":"resource","vector_store_id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.file_batches.Retrieve("batch_id-value", "vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/file_batches/batch_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresFileBatchesCancelContract) {
+    // SDK contract: vector_stores.file_batches.cancel.
+    types::vector_stores::VectorStoresFileBatchesCancelParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"file_counts":{},"object":"resource","status":"resource","vector_store_id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.file_batches.Cancel("batch_id-value", "vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/file_batches/batch_id-value/cancel");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresFileBatchesListFilesContract) {
+    // SDK contract: vector_stores.file_batches.list_files.
+    types::vector_stores::FileBatchListFilesParams params;
+    params.after = "value";
+    params.before = "value";
+    params.filter = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"last_error":{},"object":"resource","status":"resource","usage_bytes":7,"vector_store_id":"resource","attributes":{},"chunking_strategy":{},"provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.file_batches.ListFiles("batch_id-value", "vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/file_batches/batch_id-value/files");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresFilesCreateContract) {
+    // SDK contract: vector_stores.files.create.
+    types::vector_stores::FileCreateParams params;
+    params.file_id = "value";
+    params.attributes = json(R"JSON({"vendor":"value"})JSON");
+    params.chunking_strategy = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"last_error":{},"object":"resource","status":"resource","usage_bytes":7,"vector_store_id":"resource","attributes":{},"chunking_strategy":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.files.Create("vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/files");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresFilesRetrieveContract) {
+    // SDK contract: vector_stores.files.retrieve.
+    types::vector_stores::VectorStoresFilesRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"last_error":{},"object":"resource","status":"resource","usage_bytes":7,"vector_store_id":"resource","attributes":{},"chunking_strategy":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.files.Retrieve("file_id-value", "vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/files/file_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresFilesUpdateContract) {
+    // SDK contract: vector_stores.files.update.
+    types::vector_stores::FileUpdateParams params;
+    params.attributes = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"last_error":{},"object":"resource","status":"resource","usage_bytes":7,"vector_store_id":"resource","attributes":{},"chunking_strategy":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.files.Update("file_id-value", "vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/files/file_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresFilesListContract) {
+    // SDK contract: vector_stores.files.list.
+    types::vector_stores::FileListParams params;
+    params.after = "value";
+    params.before = "value";
+    params.filter = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"last_error":{},"object":"resource","status":"resource","usage_bytes":7,"vector_store_id":"resource","attributes":{},"chunking_strategy":{},"provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.files.List("vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/files");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresFilesDeleteContract) {
+    // SDK contract: vector_stores.files.delete.
+    types::vector_stores::VectorStoresFilesDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","deleted":true,"object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.files.Delete("file_id-value", "vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/files/file_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresFilesContentContract) {
+    // SDK contract: vector_stores.files.content.
+    types::vector_stores::VectorStoresFilesContentParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"text":{},"type":{},"id":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.files.Content("file_id-value", "vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/files/file_id-value/content");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresCreateContract) {
+    // SDK contract: vector_stores.create.
+    types::vector_stores::VectorStoreCreateParams params;
+    params.chunking_strategy = json(R"JSON({"vendor":"value"})JSON");
+    params.description = "value";
+    params.expires_after = json(R"JSON({"vendor":"value"})JSON");
+    params.file_ids = std::vector<std::string>{};
+    params.metadata = json(R"JSON({"vendor":"value"})JSON");
+    params.name = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"file_counts":{},"last_active_at":{},"metadata":{},"name":"resource","object":"resource","status":"resource","usage_bytes":7,"expires_after":{},"expires_at":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresRetrieveContract) {
+    // SDK contract: vector_stores.retrieve.
+    types::vector_stores::VectorStoresRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"file_counts":{},"last_active_at":{},"metadata":{},"name":"resource","object":"resource","status":"resource","usage_bytes":7,"expires_after":{},"expires_at":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.Retrieve("vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresUpdateContract) {
+    // SDK contract: vector_stores.update.
+    types::vector_stores::VectorStoreUpdateParams params;
+    params.expires_after = json(R"JSON({"vendor":"value"})JSON");
+    params.metadata = json(R"JSON({"vendor":"value"})JSON");
+    params.name = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"file_counts":{},"last_active_at":{},"metadata":{},"name":"resource","object":"resource","status":"resource","usage_bytes":7,"expires_after":{},"expires_at":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.Update("vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresListContract) {
+    // SDK contract: vector_stores.list.
+    types::vector_stores::VectorStoreListParams params;
+    params.after = "value";
+    params.before = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"file_counts":{},"last_active_at":{},"metadata":{},"name":"resource","object":"resource","status":"resource","usage_bytes":7,"expires_after":{},"expires_at":{},"provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.List(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresDeleteContract) {
+    // SDK contract: vector_stores.delete.
+    types::vector_stores::VectorStoresDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","deleted":true,"object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.Delete("vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(VectorStoresSearchContract) {
+    // SDK contract: vector_stores.search.
+    types::vector_stores::VectorStoreSearchParams params;
+    params.query = json(R"JSON({"vendor":"value"})JSON");
+    params.filters = json(R"JSON({"vendor":"value"})JSON");
+    params.max_num_results = 7;
+    params.ranking_options = json(R"JSON({"vendor":"value"})JSON");
+    params.rewrite_query = true;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"attributes":{},"content":[],"file_id":"resource","filename":"resource","score":0.5,"id":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().vector_stores.Search("vector_store_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/vector_stores/vector_store_id-value/search");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(g_request->getHeader("openai-beta") == "assistants=v2");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
