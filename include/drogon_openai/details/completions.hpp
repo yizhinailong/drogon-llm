@@ -13,6 +13,20 @@
 #include "drogon_openai/error.hpp"
 #include "drogon_openai/types/chat.hpp"
 
+namespace drogon_openai {
+
+    /**
+     * @brief Consume a stream chunk; false closes the response and returns the current snapshot.
+     */
+    using ChatChunkCallback = std::function<Result<bool>(ChatCompletionChunk const&)>;
+
+    /**
+     * @brief Consume an aggregated event; false closes the response and returns the current snapshot.
+     */
+    using ChatEventCallback = std::function<Result<bool>(ChatCompletionStreamEvent const&)>;
+
+} // namespace drogon_openai
+
 namespace drogon_openai::details {
 
     class Transport;
@@ -58,6 +72,21 @@ namespace drogon_openai::details {
          */
         [[nodiscard]] auto Parse(
             ChatCompletionCreateParams params
+        ) const -> drogon::Task<Result<ChatCompletion>>;
+
+        /**
+         * @brief Stream SSE chunks and high-level events, returning the final completion.
+         * @param params Owned request fields; this method sets `stream` to true.
+         * @param on_chunk Optional per-chunk consumer.
+         * @param on_event Optional `chunk`, text, refusal, tool, reasoning, and logprobs events.
+         * @return Final completion, current snapshot after callback cancellation, or an error.
+         * @note Callbacks run on the calling loop and must not block. A started stream is
+         * never retried. Callback false stops immediately without synthesizing done events.
+         */
+        [[nodiscard]] auto Stream(
+            ChatCompletionCreateParams params,
+            ChatChunkCallback on_chunk = {},
+            ChatEventCallback on_event = {}
         ) const -> drogon::Task<Result<ChatCompletion>>;
     };
 

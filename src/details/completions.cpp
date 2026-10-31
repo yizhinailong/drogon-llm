@@ -7,6 +7,7 @@
 #include <json/writer.h>
 
 #include "details/chat_json.hpp"
+#include "details/chat_stream.hpp"
 #include "details/transport.hpp"
 #include "drogon_openai/details/completions.hpp"
 
@@ -164,6 +165,38 @@ namespace drogon_openai::details {
             co_return std::unexpected{ response_error(std::move(parsed.error()), *response) };
         }
         co_return std::move(response->parsed);
+    }
+
+    /**
+     * @brief Stream SSE chunks and high-level events, returning the final completion.
+     * @param params Owned request fields; this method sets `stream` to true.
+     * @param on_chunk Optional per-chunk consumer.
+     * @param on_event Optional `chunk`, text, refusal, tool, reasoning, and logprobs events.
+     * @return Final completion, current snapshot after callback cancellation, or an error.
+     * @note Callbacks run on the calling loop and must not block. A started stream is
+     * never retried. Callback false stops immediately without synthesizing done events.
+     */
+    auto Completions::Stream(
+        ChatCompletionCreateParams params,
+        ChatChunkCallback on_chunk,
+        ChatEventCallback on_event
+    ) const -> drogon::Task<Result<ChatCompletion>> {
+        auto transport{ m_transport };
+        auto body{ to_request_body(params, transport->Config().model) };
+        body["stream"] = true;
+        Json::StreamWriterBuilder writer;
+        writer["indentation"] = "";
+        ChatStream stream{ params, std::move(on_chunk), std::move(on_event) };
+        auto response{ co_await transport->Send("POST", "/chat/completions", Json::writeString(writer, body), "application/json", request_options(params), [&stream](std::string_view bytes, Headers const& headers) { return stream.Feed(bytes, headers); }) };
+        if (!response) {
+            co_return std::unexpected{ std::move(response.error()) };
+        }
+        auto completion{ stream.Finish() };
+        if (!completion) {
+            co_return std::unexpected{ response_error(std::move(completion.error()), *response) };
+        }
+        completion->_request_id = response->request_id;
+        co_return std::move(*completion);
     }
 
 } // namespace drogon_openai::details
