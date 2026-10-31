@@ -284,4 +284,98 @@ namespace drogon_openai::details {
         co_return co_await group.Poll(created->id, std::move(poll), std::move(options));
     }
 
+    /**
+     * @brief Poll an attached vector store file until processing stops.
+     * @param file_id Owned operation parameters.
+     * @param vector_store_id Owned operation parameters.
+     * @param poll Owned operation parameters.
+     * @param options Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto VectorStoresFiles::Poll(
+        std::string file_id,
+        std::string vector_store_id,
+        PollOptions poll,
+        RequestOptions options
+    ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFile>> {
+
+        auto transport{ m_transport };
+        auto path{ resource_path("/vector_stores/{vector_store_id}/files/{file_id}", { { "vector_store_id", vector_store_id }, { "file_id", file_id } }) };
+        if (!path) {
+            co_return std::unexpected{ std::move(path.error()) };
+        }
+        default_header(options.extra_headers, "OpenAI-Beta", "assistants=v2");
+        poll.terminal_states = { "completed", "failed", "cancelled" };
+        co_return co_await poll_typed<types::vector_stores::VectorStoreFile>(std::move(transport), std::move(*path), std::move(poll), std::move(options));
+    }
+
+    /**
+     * @brief Attach an uploaded file and wait for processing.
+     * @param vector_store_id Owned operation parameters.
+     * @param params Owned operation parameters.
+     * @param poll Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto VectorStoresFiles::CreateAndPoll(
+        std::string vector_store_id,
+        types::vector_stores::FileCreateParams params,
+        PollOptions poll
+    ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFile>> {
+
+        auto group{ *this };
+        auto options{ params.Options() };
+        auto created{ co_await group.Create(vector_store_id, std::move(params)) };
+        if (!created) {
+            co_return std::unexpected{ std::move(created.error()) };
+        }
+        co_return co_await group.Poll(created->id, std::move(vector_store_id), std::move(poll), std::move(options));
+    }
+
+    /**
+     * @brief Upload a file and attach its ID to a vector store.
+     * @param vector_store_id Owned operation parameters.
+     * @param file Owned operation parameters.
+     * @param params Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto VectorStoresFiles::Upload(
+        std::string vector_store_id,
+        UploadFile file,
+        types::vector_stores::FileCreateParams params
+    ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFile>> {
+
+        auto group{ *this };
+        Files files{ m_transport };
+        auto created{ co_await files.Create({ .file = std::move(file), .purpose = "assistants", .timeout = params.timeout, .max_retries = params.max_retries, .extra_headers = params.extra_headers, .extra_query = params.extra_query }) };
+        if (!created) {
+            co_return std::unexpected{ std::move(created.error()) };
+        }
+        params.file_id = created->id;
+        co_return co_await group.Create(std::move(vector_store_id), std::move(params));
+    }
+
+    /**
+     * @brief Upload and attach a file, then wait for processing.
+     * @param vector_store_id Owned operation parameters.
+     * @param file Owned operation parameters.
+     * @param params Owned operation parameters.
+     * @param poll Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto VectorStoresFiles::UploadAndPoll(
+        std::string vector_store_id,
+        UploadFile file,
+        types::vector_stores::FileCreateParams params,
+        PollOptions poll
+    ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFile>> {
+
+        auto group{ *this };
+        auto options{ params.Options() };
+        auto created{ co_await group.Upload(vector_store_id, std::move(file), std::move(params)) };
+        if (!created) {
+            co_return std::unexpected{ std::move(created.error()) };
+        }
+        co_return co_await group.Poll(created->id, std::move(vector_store_id), std::move(poll), std::move(options));
+    }
+
 } // namespace drogon_openai::details

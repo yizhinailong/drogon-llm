@@ -251,6 +251,62 @@ namespace drogon_openai::details {
             std::string vector_store_id,
             types::vector_stores::VectorStoresFilesContentParams params = {}
         ) const -> drogon::Task<Result<Page<types::vector_stores::FileContentResponse>>>;
+
+        /**
+         * @brief Poll an attached vector store file until processing stops.
+         * @param file_id Owned operation parameters.
+         * @param vector_store_id Owned operation parameters.
+         * @param poll Owned operation parameters.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Poll(
+            std::string file_id,
+            std::string vector_store_id,
+            PollOptions poll = {},
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFile>>;
+
+        /**
+         * @brief Attach an uploaded file and wait for processing.
+         * @param vector_store_id Owned operation parameters.
+         * @param params Owned operation parameters.
+         * @param poll Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto CreateAndPoll(
+            std::string vector_store_id,
+            types::vector_stores::FileCreateParams params,
+            PollOptions poll = {}
+        ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFile>>;
+
+        /**
+         * @brief Upload a file and attach its ID to a vector store.
+         * @param vector_store_id Owned operation parameters.
+         * @param file Owned operation parameters.
+         * @param params Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Upload(
+            std::string vector_store_id,
+            UploadFile file,
+            types::vector_stores::FileCreateParams params = {}
+        ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFile>>;
+
+        /**
+         * @brief Upload and attach a file, then wait for processing.
+         * @param vector_store_id Owned operation parameters.
+         * @param file Owned operation parameters.
+         * @param params Owned operation parameters.
+         * @param poll Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto UploadAndPoll(
+            std::string vector_store_id,
+            UploadFile file,
+            types::vector_stores::FileCreateParams params = {},
+            PollOptions poll = {}
+        ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFile>>;
     };
 
     /**

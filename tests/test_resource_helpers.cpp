@@ -236,6 +236,14 @@ DROGON_TEST(ResponsesStreamIsIncrementalAndDetectsTruncation) {
     CHECK(thrown.error().kind == ErrorKind::InvalidRequest);
 }
 
+DROGON_TEST(PollingHeadersRespectCaseInsensitiveOverrides) {
+    auto result{ drogon::sync_wait(client().vector_stores.files.Poll("file", "store", { .interval = 0.001 }, { .extra_headers = { { "OPENAI-BETA", "custom" }, { "X-STAINLESS-POLL-HELPER", "custom" } } })) };
+    REQUIRE(result);
+    CHECK(result->status == "completed");
+    CHECK(g_poll_beta == "custom");
+    CHECK(g_poll_helper == "custom");
+}
+
 /**
  * @brief Run resource helpers against the local app.
  * @param argc Framework argument count.
