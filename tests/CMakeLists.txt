@@ -7,6 +7,7 @@ foreach(TEST_SOURCE IN LISTS TEST_SOURCES)
     add_executable(${TEST_NAME} ${TEST_SOURCE})
     target_link_libraries(${TEST_NAME} PRIVATE ${PROJECT_NAME}::${PROJECT_NAME})
     target_compile_features(${TEST_NAME} PRIVATE cxx_std_23)
+    target_include_directories(${TEST_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
     # Tests load config.json from the repo root. The app-backed ones share its
     # listener port, so the lock keeps them apart under ctest -j. Exit code 77
