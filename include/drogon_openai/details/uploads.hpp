@@ -125,5 +125,20 @@ namespace drogon_openai::details {
             std::string upload_id,
             types::uploads::UploadCompleteParams params = {}
         ) const -> drogon::Task<Result<RawResponse<types::uploads::Upload>>>;
+
+        /**
+         * @brief Upload owned file bytes as ordered parts and complete the upload.
+         * @param file Owned operation parameters.
+         * @param purpose Owned operation parameters.
+         * @param part_size Owned operation parameters.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto UploadFileChunked(
+            UploadFile file,
+            std::string purpose,
+            std::size_t part_size = 67108864,
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<types::uploads::Upload>>;
     };
 } // namespace drogon_openai::details

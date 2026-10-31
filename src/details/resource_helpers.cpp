@@ -466,4 +466,37 @@ namespace drogon_openai::details {
         co_return co_await group.CreateAndPoll(std::move(vector_store_id), std::move(params), std::move(poll));
     }
 
+    /**
+     * @brief Upload owned file bytes as ordered parts and complete the upload.
+     * @param file Owned operation parameters.
+     * @param purpose Owned operation parameters.
+     * @param part_size Owned operation parameters.
+     * @param options Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto Uploads::UploadFileChunked(
+        UploadFile file,
+        std::string purpose,
+        std::size_t part_size,
+        RequestOptions options
+    ) const -> drogon::Task<Result<types::uploads::Upload>> {
+
+        auto group{ *this };
+        if (part_size == 0 || part_size > 67108864) {
+            co_return std::unexpected{ Error{ .kind = ErrorKind::InvalidRequest, .message = "upload part size must be between 1 and 64 MiB" } };
+        }
+        auto created{ co_await group.Create({ .bytes = static_cast<std::int64_t>(file.content.size()), .filename = file.filename, .mime_type = file.content_type, .purpose = purpose, .timeout = options.timeout, .max_retries = options.max_retries, .extra_headers = options.extra_headers, .extra_query = options.extra_query }) };
+        if (!created) {
+            co_return std::unexpected{ std::move(created.error()) };
+        }
+        std::vector<std::string> part_ids;
+        for (std::size_t offset{}; offset < file.content.size(); offset += std::min(part_size, file.content.size() - offset)) {
+            auto part{ co_await group.parts.Create(created->id, { .data = UploadFile{ .content = file.content.substr(offset, part_size), .filename = file.filename, .content_type = file.content_type }, .timeout = options.timeout, .max_retries = options.max_retries, .extra_headers = options.extra_headers, .extra_query = options.extra_query }) };
+            if (!part) {
+                co_return std::unexpected{ std::move(part.error()) };
+            }
+            part_ids.push_back(std::move(part->id));
+        }
+        co_return co_await group.Complete(created->id, { .part_ids = std::move(part_ids), .timeout = options.timeout, .max_retries = options.max_retries, .extra_headers = options.extra_headers, .extra_query = options.extra_query });
+    }
 } // namespace drogon_openai::details

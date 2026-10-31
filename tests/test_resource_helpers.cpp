@@ -267,6 +267,24 @@ DROGON_TEST(PollingHeadersRespectCaseInsensitiveOverrides) {
     CHECK(g_poll_helper == "custom");
 }
 
+DROGON_TEST(ChunkedUploadKeepsBinaryAndPartOrder) {
+    g_parts.clear();
+    auto result{ drogon::sync_wait(client().uploads.UploadFileChunked({ .content = std::string{ "ab\0cdefgh", 9 }, .filename = "input.bin" }, "user_data", 3)) };
+    REQUIRE(result);
+    CHECK(result->status == "completed");
+    REQUIRE(g_parts.size() == 3);
+    CHECK(g_parts[0] + g_parts[1] + g_parts[2] == std::string("ab\0cdefgh", 9));
+    CHECK(result->raw["seen_parts"][0] == "part-1");
+    CHECK(result->raw["seen_parts"][2] == "part-3");
+    auto invalid{ drogon::sync_wait(client().uploads.UploadFileChunked({}, "user_data", 0)) };
+    REQUIRE(!invalid);
+    CHECK(invalid.error().kind == ErrorKind::InvalidRequest);
+    auto processed{ drogon::sync_wait(client().files.WaitForProcessing("file-1")) };
+    REQUIRE(processed);
+    CHECK(processed->status == "processed");
+    CHECK(processed->_request_id == "req-file");
+}
+
 /**
  * @brief Run resource helpers against the local app.
  * @param argc Framework argument count.
