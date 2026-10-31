@@ -1991,6 +1991,306 @@ DROGON_TEST(LiveSessionsRejectContract) {
     CHECK(g_request->getHeader("accept") == "*/*");
 }
 
+DROGON_TEST(FineTuningAlphaGradersRunContract) {
+    // SDK contract: fine_tuning.alpha.graders.run.
+    types::fine_tuning::GraderRunParams params;
+    params.grader = json(R"JSON({"vendor":"value"})JSON");
+    params.model_sample = "value";
+    params.item = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"metadata":{},"api_model_grader_token_usage_per_model":{},"reward":0.5,"sub_rewards":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.alpha.graders.Run(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/alpha/graders/run");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningAlphaGradersValidateContract) {
+    // SDK contract: fine_tuning.alpha.graders.validate.
+    types::fine_tuning::GraderValidateParams params;
+    params.grader = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"grader":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.alpha.graders.Validate(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/alpha/graders/validate");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningCheckpointsPermissionsCreateContract) {
+    // SDK contract: fine_tuning.checkpoints.permissions.create.
+    types::fine_tuning::PermissionCreateParams params;
+    params.project_ids = std::vector<std::string>{};
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"object":"resource","project_id":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.checkpoints.permissions.Create("fine_tuned_model_checkpoint-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/checkpoints/fine_tuned_model_checkpoint-value/permissions");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningCheckpointsPermissionsRetrieveContract) {
+    // SDK contract: fine_tuning.checkpoints.permissions.retrieve.
+    types::fine_tuning::PermissionRetrieveParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.project_id = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[],"has_more":true,"object":"resource","first_id":{},"last_id":{},"id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.checkpoints.permissions.Retrieve("fine_tuned_model_checkpoint-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/checkpoints/fine_tuned_model_checkpoint-value/permissions");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningCheckpointsPermissionsListContract) {
+    // SDK contract: fine_tuning.checkpoints.permissions.list.
+    types::fine_tuning::PermissionListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.order = "value";
+    params.project_id = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"object":"resource","project_id":"resource","provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.checkpoints.permissions.List("fine_tuned_model_checkpoint-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/checkpoints/fine_tuned_model_checkpoint-value/permissions");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningCheckpointsPermissionsDeleteContract) {
+    // SDK contract: fine_tuning.checkpoints.permissions.delete.
+    types::fine_tuning::FineTuningCheckpointsPermissionsDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","deleted":true,"object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.checkpoints.permissions.Delete("permission_id-value", "fine_tuned_model_checkpoint-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/checkpoints/fine_tuned_model_checkpoint-value/permissions/permission_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningJobsCheckpointsListContract) {
+    // SDK contract: fine_tuning.jobs.checkpoints.list.
+    types::fine_tuning::CheckpointListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"fine_tuned_model_checkpoint":"resource","fine_tuning_job_id":"resource","metrics":{},"object":"resource","step_number":7,"provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.jobs.checkpoints.List("fine_tuning_job_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/jobs/fine_tuning_job_id-value/checkpoints");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningJobsCreateContract) {
+    // SDK contract: fine_tuning.jobs.create.
+    types::fine_tuning::JobCreateParams params;
+    params.model = "value";
+    params.training_file = "value";
+    params.hyperparameters = json(R"JSON({"vendor":"value"})JSON");
+    params.integrations = json(R"JSON({"vendor":"value"})JSON");
+    params.metadata = json(R"JSON({"vendor":"value"})JSON");
+    params.method = json(R"JSON({"vendor":"value"})JSON");
+    params.seed = json(R"JSON({"vendor":"value"})JSON");
+    params.suffix = json(R"JSON({"vendor":"value"})JSON");
+    params.validation_file = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"error":{},"fine_tuned_model":{},"finished_at":{},"hyperparameters":{},"model":"resource","object":"resource","organization_id":"resource","result_files":[],"seed":7,"status":"resource","trained_tokens":{},"training_file":"resource","validation_file":{},"estimated_finish":{},"integrations":[],"metadata":{},"method":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.jobs.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/jobs");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningJobsRetrieveContract) {
+    // SDK contract: fine_tuning.jobs.retrieve.
+    types::fine_tuning::FineTuningJobsRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"error":{},"fine_tuned_model":{},"finished_at":{},"hyperparameters":{},"model":"resource","object":"resource","organization_id":"resource","result_files":[],"seed":7,"status":"resource","trained_tokens":{},"training_file":"resource","validation_file":{},"estimated_finish":{},"integrations":[],"metadata":{},"method":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.jobs.Retrieve("fine_tuning_job_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/jobs/fine_tuning_job_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningJobsListContract) {
+    // SDK contract: fine_tuning.jobs.list.
+    types::fine_tuning::JobListParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.metadata = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"error":{},"fine_tuned_model":{},"finished_at":{},"hyperparameters":{},"model":"resource","object":"resource","organization_id":"resource","result_files":[],"seed":7,"status":"resource","trained_tokens":{},"training_file":"resource","validation_file":{},"estimated_finish":{},"integrations":[],"metadata":{},"method":{},"provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.jobs.List(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/jobs");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningJobsCancelContract) {
+    // SDK contract: fine_tuning.jobs.cancel.
+    types::fine_tuning::FineTuningJobsCancelParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"error":{},"fine_tuned_model":{},"finished_at":{},"hyperparameters":{},"model":"resource","object":"resource","organization_id":"resource","result_files":[],"seed":7,"status":"resource","trained_tokens":{},"training_file":"resource","validation_file":{},"estimated_finish":{},"integrations":[],"metadata":{},"method":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.jobs.Cancel("fine_tuning_job_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/jobs/fine_tuning_job_id-value/cancel");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningJobsListEventsContract) {
+    // SDK contract: fine_tuning.jobs.list_events.
+    types::fine_tuning::JobListEventsParams params;
+    params.after = "value";
+    params.limit = 7;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"level":"resource","message":"resource","object":"resource","data":{},"type":{},"provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.jobs.ListEvents("fine_tuning_job_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/jobs/fine_tuning_job_id-value/events");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningJobsPauseContract) {
+    // SDK contract: fine_tuning.jobs.pause.
+    types::fine_tuning::FineTuningJobsPauseParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"error":{},"fine_tuned_model":{},"finished_at":{},"hyperparameters":{},"model":"resource","object":"resource","organization_id":"resource","result_files":[],"seed":7,"status":"resource","trained_tokens":{},"training_file":"resource","validation_file":{},"estimated_finish":{},"integrations":[],"metadata":{},"method":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.jobs.Pause("fine_tuning_job_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/jobs/fine_tuning_job_id-value/pause");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(FineTuningJobsResumeContract) {
+    // SDK contract: fine_tuning.jobs.resume.
+    types::fine_tuning::FineTuningJobsResumeParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"error":{},"fine_tuned_model":{},"finished_at":{},"hyperparameters":{},"model":"resource","object":"resource","organization_id":"resource","result_files":[],"seed":7,"status":"resource","trained_tokens":{},"training_file":"resource","validation_file":{},"estimated_finish":{},"integrations":[],"metadata":{},"method":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().fine_tuning.jobs.Resume("fine_tuning_job_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/fine_tuning/jobs/fine_tuning_job_id-value/resume");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
