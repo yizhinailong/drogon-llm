@@ -22,7 +22,17 @@
       "config": {
         "base_url": "http://127.0.0.1:18081/v1",
         "api_key_env": "DROGON_OPENAI_TEST_API_KEY",
-        "model": "fake-model"
+        "model": "fake-model",
+        "max_retries": 2,
+        "timeout": {
+          "connect": 5,
+          "read": 600,
+          "write": 600
+        },
+        "default_headers": {},
+        "default_query": {},
+        "organization": "",
+        "project": ""
       }
     }
   ]

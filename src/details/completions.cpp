@@ -2,11 +2,10 @@
  * @file completions.cpp
  * @brief Implement the chat completions API group that `Chat::completions` exposes.
  */
-#include "drogon_openai/details/completions.hpp"
-
 #include <utility>
 
 #include "details/transport.hpp"
+#include "drogon_openai/details/completions.hpp"
 
 namespace drogon_openai::details {
 
@@ -152,8 +151,11 @@ namespace drogon_openai::details {
         // Keep the transport in the coroutine frame in case this object dies mid-request.
         auto const transport{ m_transport };
         auto body{ to_request_body(params, transport->Config().model) };
-        auto const response{ co_await transport->Post("/chat/completions", std::move(body), params.timeout) };
-        co_return response.and_then(parse_chat_completion);
+        auto response{ co_await transport->Request("POST", "/chat/completions", std::move(body), { .timeout = Timeout{ params.timeout } }) };
+        if (!response) {
+            co_return std::unexpected{ std::move(response.error()) };
+        }
+        co_return parse_chat_completion(response->parsed);
     }
 
 } // namespace drogon_openai::details

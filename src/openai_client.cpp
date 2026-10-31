@@ -4,6 +4,10 @@
  */
 #include "drogon_openai/openai_client.hpp"
 
+#include <algorithm>
+#include <cctype>
+#include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <cstdlib>
 #include <format>
@@ -11,6 +15,8 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+
+#include <drogon/utils/Utilities.h>
 
 #include "details/transport.hpp"
 
@@ -65,13 +71,210 @@ namespace drogon_openai {
      * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
      */
     OpenAI::OpenAI(OpenAIConfig config)
-        : chat{ std::make_shared<details::Transport>(std::move(config)) } {}
+        : m_transport{ std::make_shared<details::Transport>(std::move(config)) }, chat{ m_transport } {}
+
+    /**
+     * @brief Copy this client with selected settings overridden.
+     * @param options Settings to override.
+     * @return Independent value handle; the original settings remain valid.
+     */
+    auto OpenAI::WithOptions(OpenAIOptions options) const -> OpenAI {
+        auto config{ Config() };
+        if (options.base_url) {
+            config.base_url = std::move(*options.base_url);
+        }
+        if (options.api_key) {
+            config.api_key = std::move(*options.api_key);
+        }
+        if (options.model) {
+            config.model = std::move(*options.model);
+        }
+        if (options.max_retries) {
+            config.max_retries = *options.max_retries;
+        }
+        if (options.timeout) {
+            config.timeout = *options.timeout;
+        }
+        if (options.organization) {
+            config.organization = std::move(*options.organization);
+        }
+        if (options.project) {
+            config.project = std::move(*options.project);
+        }
+        if (options.default_headers) {
+            Headers merged;
+            for (auto const* source : { &config.default_headers, &*options.default_headers }) {
+                for (auto const& [name, value] : *source) {
+                    std::string key{ name };
+                    std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                    merged[key] = value;
+                }
+            }
+            config.default_headers = std::move(merged);
+        }
+        if (options.default_query) {
+            if (!options.default_query->isObject() && !options.default_query->isNull()) {
+                throw std::invalid_argument{ "default_query must be a JSON object" };
+            }
+            for (auto const& name : options.default_query->getMemberNames()) {
+                config.default_query[name] = (*options.default_query)[name];
+            }
+        }
+        return OpenAI{ std::move(config) };
+    }
+
+    /**
+     * @brief Copy this client with selected settings overridden.
+     * @param options Settings to override.
+     * @return Independent value handle.
+     */
+    auto OpenAI::Copy(OpenAIOptions options) const -> OpenAI {
+        return WithOptions(std::move(options));
+    }
+
+    /**
+     * @brief Return the immutable client configuration.
+     * @return Current endpoint and request defaults.
+     */
+    auto OpenAI::Config() const noexcept -> OpenAIConfig const& {
+        return m_transport->Config();
+    }
+
+    /**
+     * @brief Send JSON and retain response headers and raw bytes.
+     * @param method HTTP method.
+     * @param path API path.
+     * @param body JSON request body.
+     * @param options Request overrides.
+     * @return Raw response with parsed JSON or an error.
+     */
+    auto OpenAI::RequestRaw(
+        std::string method,
+        std::string path,
+        Json::Value body,
+        RequestOptions options
+    ) const -> drogon::Task<Result<RawResponse<Json::Value>>> {
+        auto const transport{ m_transport };
+        co_return co_await transport->Request(std::move(method), std::move(path), std::move(body), std::move(options));
+    }
+
+    /**
+     * @brief Request an unwrapped API path and parse its JSON response.
+     * @param method HTTP method, e.g. `GET` or `POST`.
+     * @param path Path relative to base_url.
+     * @param body JSON body; null omits the body.
+     * @param options Request overrides.
+     * @return JSON value or a request error; an empty successful body yields null.
+     */
+    auto OpenAI::Request(
+        std::string method,
+        std::string path,
+        Json::Value body,
+        RequestOptions options
+    ) const -> drogon::Task<Result<Json::Value>> {
+        auto const transport{ m_transport };
+        auto response{ co_await transport->Request(std::move(method), std::move(path), std::move(body), std::move(options)) };
+        if (!response) {
+            co_return std::unexpected{ response.error() };
+        }
+        co_return std::move(response->parsed);
+    }
+
+    /**
+     * @brief GET an unwrapped JSON path.
+     * @param path Path below base_url.
+     * @param options Request overrides.
+     * @return Parsed JSON or an error.
+     */
+    auto OpenAI::Get(std::string path, RequestOptions options) const -> drogon::Task<Result<Json::Value>> {
+        auto const transport{ m_transport };
+        auto response{ co_await transport->Request("GET", std::move(path), {}, std::move(options)) };
+        if (!response) {
+            co_return std::unexpected{ response.error() };
+        }
+        co_return std::move(response->parsed);
+    }
+
+    /**
+     * @brief DELETE an unwrapped JSON path.
+     * @param path Path below base_url.
+     * @param options Request overrides.
+     * @return Parsed JSON or an error.
+     */
+    auto OpenAI::Delete(std::string path, RequestOptions options) const -> drogon::Task<Result<Json::Value>> {
+        auto const transport{ m_transport };
+        auto response{ co_await transport->Request("DELETE", std::move(path), {}, std::move(options)) };
+        if (!response) {
+            co_return std::unexpected{ response.error() };
+        }
+        co_return std::move(response->parsed);
+    }
+
+    /**
+     * @brief POST an unwrapped JSON path.
+     * @param path Path below base_url.
+     * @param body JSON request body.
+     * @param options Request overrides.
+     * @return Parsed JSON or an error.
+     */
+    auto OpenAI::Post(
+        std::string path,
+        Json::Value body,
+        RequestOptions options
+    ) const -> drogon::Task<Result<Json::Value>> {
+        auto const transport{ m_transport };
+        auto response{ co_await transport->Request("POST", std::move(path), std::move(body), std::move(options)) };
+        if (!response) {
+            co_return std::unexpected{ response.error() };
+        }
+        co_return std::move(response->parsed);
+    }
+
+    /**
+     * @brief PUT an unwrapped JSON path.
+     * @param path Path below base_url.
+     * @param body JSON request body.
+     * @param options Request overrides.
+     * @return Parsed JSON or an error.
+     */
+    auto OpenAI::Put(
+        std::string path,
+        Json::Value body,
+        RequestOptions options
+    ) const -> drogon::Task<Result<Json::Value>> {
+        auto const transport{ m_transport };
+        auto response{ co_await transport->Request("PUT", std::move(path), std::move(body), std::move(options)) };
+        if (!response) {
+            co_return std::unexpected{ response.error() };
+        }
+        co_return std::move(response->parsed);
+    }
+
+    /**
+     * @brief PATCH an unwrapped JSON path.
+     * @param path Path below base_url.
+     * @param body JSON request body.
+     * @param options Request overrides.
+     * @return Parsed JSON or an error.
+     */
+    auto OpenAI::Patch(
+        std::string path,
+        Json::Value body,
+        RequestOptions options
+    ) const -> drogon::Task<Result<Json::Value>> {
+        auto const transport{ m_transport };
+        auto response{ co_await transport->Request("PATCH", std::move(path), std::move(body), std::move(options)) };
+        if (!response) {
+            co_return std::unexpected{ response.error() };
+        }
+        co_return std::move(response->parsed);
+    }
 
     /**
      * @brief Read the endpoint settings from the plugin's `config` object.
      * @param config The plugin's `config` object from config.json.
      * @throws std::invalid_argument If `base_url` or `model` is missing or empty,
-     * or if `api_key_env` names an unset or empty environment variable.
+     * or if `api_key_env` names an unset or empty environment variable, or request defaults are invalid.
      */
     auto OpenAIClient::initAndStart(Json::Value const& config) -> void {
         m_config = OpenAIConfig{
@@ -81,6 +284,60 @@ namespace drogon_openai {
         };
         if (m_config.base_url.empty() || m_config.model.empty()) {
             throw std::invalid_argument{ "drogon_openai::OpenAIClient: config needs non-empty base_url and model" };
+        }
+        auto invalid{ [] { throw std::invalid_argument{ "drogon_openai::OpenAIClient: invalid request defaults" }; } };
+        if (config.isMember("max_retries")) {
+            if (!config["max_retries"].isInt() || config["max_retries"].asInt() < 0) {
+                invalid();
+            }
+            m_config.max_retries = config["max_retries"].asInt();
+        }
+        if (config.isMember("timeout")) {
+            auto const& value{ config["timeout"] };
+            if (value.isNumeric()) {
+                m_config.timeout = Timeout{ value.asDouble() };
+            } else if (value.isObject()) {
+                for (auto const& [name, field] : { std::pair{ "connect", &m_config.timeout.connect }, { "read", &m_config.timeout.read }, { "write", &m_config.timeout.write } }) {
+                    if (value.isMember(name)) {
+                        if (!value[name].isNumeric()) {
+                            invalid();
+                        }
+                        *field = value[name].asDouble();
+                    }
+                }
+            } else {
+                invalid();
+            }
+            for (double duration : { m_config.timeout.connect, m_config.timeout.read, m_config.timeout.write }) {
+                if (!std::isfinite(duration) || duration < 0) {
+                    invalid();
+                }
+            }
+        }
+        if (config.isMember("default_headers")) {
+            if (!config["default_headers"].isObject()) {
+                invalid();
+            }
+            for (auto const& name : config["default_headers"].getMemberNames()) {
+                if (!config["default_headers"][name].isString()) {
+                    invalid();
+                }
+                m_config.default_headers[name] = config["default_headers"][name].asString();
+            }
+        }
+        if (config.isMember("default_query")) {
+            if (!config["default_query"].isObject()) {
+                invalid();
+            }
+            m_config.default_query = config["default_query"];
+        }
+        for (auto const& [name, field] : { std::pair{ "organization", &m_config.organization }, { "project", &m_config.project } }) {
+            if (config.isMember(name)) {
+                if (!config[name].isString()) {
+                    invalid();
+                }
+                *field = config[name].asString();
+            }
         }
     }
 

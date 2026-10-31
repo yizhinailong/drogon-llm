@@ -106,6 +106,50 @@ DROGON_TEST(AcceptsTrackedConfigJson) {
     test_support::unset_env(test_support::API_KEY_ENV);
 }
 
+DROGON_TEST(ReadsClientRequestDefaults) {
+    auto config{ minimal_config() };
+    config["max_retries"] = 4;
+    config["timeout"]["connect"] = 1.5;
+    config["timeout"]["read"] = 8.0;
+    config["timeout"]["write"] = 9.0;
+    config["default_headers"]["x-client"] = "example";
+    config["default_query"]["version"] = "test";
+    config["organization"] = "org-test";
+    config["project"] = "project-test";
+    drogon_openai::OpenAIClient plugin;
+    plugin.initAndStart(config);
+    CHECK(plugin.Config().max_retries == 4);
+    CHECK(plugin.Config().timeout.connect == 1.5);
+    CHECK(plugin.Config().timeout.read == 8.0);
+    CHECK(plugin.Config().timeout.write == 9.0);
+    CHECK(plugin.Config().default_headers.at("x-client") == "example");
+    CHECK(plugin.Config().default_query["version"] == "test");
+    CHECK(plugin.Config().organization == "org-test");
+    CHECK(plugin.Config().project == "project-test");
+    config["timeout"] = 7.0;
+    plugin.initAndStart(config);
+    CHECK(plugin.Config().timeout.connect == 7.0);
+    CHECK(plugin.Config().timeout.read == 7.0);
+    CHECK(plugin.Config().timeout.write == 7.0);
+}
+
+DROGON_TEST(RejectsInvalidClientRequestDefaults) {
+    for (auto const* key : { "max_retries", "timeout", "default_headers", "default_query", "organization", "project" }) {
+        auto config{ minimal_config() };
+        config[key] = Json::arrayValue;
+        CHECK(rejection(config).contains("invalid request defaults"));
+    }
+    auto config{ minimal_config() };
+    config["max_retries"] = -1;
+    CHECK(rejection(config).contains("invalid request defaults"));
+    config = minimal_config();
+    config["timeout"]["read"] = -1;
+    CHECK(rejection(config).contains("invalid request defaults"));
+    config = minimal_config();
+    config["default_headers"]["invalid"] = 1;
+    CHECK(rejection(config).contains("invalid request defaults"));
+}
+
 auto main(int argc, char** argv) -> int {
     return drogon::test::run(argc, argv);
 }

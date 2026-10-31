@@ -1,31 +1,45 @@
 /**
  * @file transport.hpp
- * @brief Declare the HTTP transport that the API groups of one `OpenAI` client share.
+ * @brief Declare shared request construction, retries, and response decoding.
  */
 #pragma once
 
-#include <string>
-
-#include <drogon/utils/coroutine.h>
-#include <json/value.h>
-
-#include "drogon_openai/error.hpp"
+#include "details/http_exchange.hpp"
 #include "drogon_openai/openai_client.hpp"
 
 namespace drogon_openai::details {
 
     /**
-     * @brief Send authenticated JSON requests to one OpenAI-format endpoint.
-     *
-     * Each request gets its own HTTP client on the calling thread's event loop. drogon
-     * allows one in-flight request per client, so a shared client would serialize them;
-     * a client on the caller's loop also makes the coroutine resume on the caller's thread.
+     * @brief Find the calling event loop, falling back to the application's main loop.
+     * @return Loop used for requests and asynchronous delays.
+     */
+    auto current_loop() -> trantor::EventLoop*;
+
+    /**
+     * @brief Encode a single path segment or query component using UTF-8 percent escapes.
+     * @param value Unescaped component.
+     * @return Encoded component.
+     */
+    auto encode_path_segment(std::string const& value) -> std::string;
+
+    /**
+     * @brief Decode JSON without logging response bodies.
+     * @param body Response bytes; empty means null.
+     * @return Parsed JSON or a response validation error.
+     */
+    auto decode_json(std::string const& body) -> Result<Json::Value>;
+
+    /**
+     * @brief Immutable client settings with a new asynchronous connection per attempt.
      */
     class Transport {
+    private:
+        OpenAIConfig m_config; ///< Endpoint and client defaults.
+
     public:
         /**
-         * @brief Store the endpoint settings and split `config.base_url`.
-         * @param config Endpoint settings; `api_key` may be empty for endpoints without auth.
+         * @brief Store immutable client settings.
+         * @param config Endpoint settings.
          */
         explicit Transport(OpenAIConfig config);
 
@@ -36,23 +50,42 @@ namespace drogon_openai::details {
         [[nodiscard]] auto Config() const noexcept -> OpenAIConfig const&;
 
         /**
-         * @brief POST a JSON body and await the JSON response.
-         * @param path Path below `base_url`, e.g. `/chat/completions`.
-         * @param body Request body.
-         * @param timeout Seconds to wait for the response; 0 waits forever.
-         * @return Task yielding the parsed body of a 2xx response, or why the request failed.
-         * @note The caller keeps this object alive until the task completes.
+         * @brief Send JSON and retain response metadata.
+         * @param method HTTP method.
+         * @param path Path relative to the base URL.
+         * @param body JSON body; null omits it.
+         * @param options Request overrides.
+         * @param deadline Optional total deadline across retries and phases.
+         * @return Parsed JSON with headers, or an error.
          */
-        [[nodiscard]] auto Post(
+        [[nodiscard]] auto Request(
+            std::string method,
             std::string path,
-            Json::Value body,
-            double timeout
-        ) const -> drogon::Task<Result<Json::Value>>;
+            Json::Value body = {},
+            RequestOptions options = {},
+            std::optional<std::chrono::steady_clock::time_point> deadline = {}
+        ) const -> drogon::Task<Result<RawResponse<Json::Value>>>;
 
-    private:
-        OpenAIConfig m_config;     ///< Endpoint settings.
-        std::string m_host;        ///< Scheme, host, and port of `base_url`, for `HttpClient::newHttpClient()`.
-        std::string m_path_prefix; ///< Path part of `base_url`, e.g. `/v1`; empty without one.
+        /**
+         * @brief Send bytes with retries before successful streaming body delivery begins.
+         * @param method HTTP method.
+         * @param path Path relative to the base URL.
+         * @param body Owned request bytes.
+         * @param content_type Request media type; empty omits it.
+         * @param options Request overrides.
+         * @param on_data Optional incremental response consumer.
+         * @param deadline Optional total deadline across retries and phases.
+         * @return Response bytes and metadata, or an error.
+         */
+        [[nodiscard]] auto Send(
+            std::string method,
+            std::string path,
+            std::string body,
+            std::string content_type,
+            RequestOptions options = {},
+            BodyCallback on_data = {},
+            std::optional<std::chrono::steady_clock::time_point> deadline = {}
+        ) const -> drogon::Task<Result<RawResponse<std::string>>>;
     };
 
 } // namespace drogon_openai::details
