@@ -676,6 +676,92 @@ DROGON_TEST(FilesRetrieveContentContract) {
     CHECK(*result == "legacy text");
 }
 
+DROGON_TEST(UploadsPartsCreateContract) {
+    // SDK contract: uploads.parts.create.
+    types::uploads::PartCreateParams params;
+    params.data = UploadFile{ .content = std::string{ "file\0data", 9 }, .filename = "input.bin" };
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"object":"resource","upload_id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().uploads.parts.Create("upload_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/uploads/upload_id-value/parts");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+    CHECK(g_request->getHeader("content-type").starts_with("multipart/form-data; boundary="));
+    CHECK(g_request->body().find(std::string_view("file\0data", 9)) != std::string_view::npos);
+}
+
+DROGON_TEST(UploadsCreateContract) {
+    // SDK contract: uploads.create.
+    types::uploads::UploadCreateParams params;
+    params.bytes = 7;
+    params.filename = "value";
+    params.mime_type = "value";
+    params.purpose = json(R"JSON({"vendor":"value"})JSON");
+    params.expires_after = json(R"JSON({"vendor":"value"})JSON");
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","bytes":7,"created_at":7,"expires_at":7,"filename":"resource","object":"resource","purpose":"resource","status":"resource","file":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().uploads.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/uploads");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(UploadsCancelContract) {
+    // SDK contract: uploads.cancel.
+    types::uploads::UploadsCancelParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","bytes":7,"created_at":7,"expires_at":7,"filename":"resource","object":"resource","purpose":"resource","status":"resource","file":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().uploads.Cancel("upload_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/uploads/upload_id-value/cancel");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(UploadsCompleteContract) {
+    // SDK contract: uploads.complete.
+    types::uploads::UploadCompleteParams params;
+    params.part_ids = std::vector<std::string>{};
+    params.md5 = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","bytes":7,"created_at":7,"expires_at":7,"filename":"resource","object":"resource","purpose":"resource","status":"resource","file":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().uploads.Complete("upload_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/uploads/upload_id-value/complete");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
