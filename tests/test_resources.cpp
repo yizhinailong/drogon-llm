@@ -1540,6 +1540,169 @@ DROGON_TEST(VectorStoresSearchContract) {
     CHECK(result->_request_id == "req-resource");
 }
 
+DROGON_TEST(WebhooksEventTypesListContract) {
+    // SDK contract: webhooks.event_types.list.
+    types::webhooks::WebhooksEventTypesListParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[],"object":"resource","id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().webhooks.event_types.List(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/webhook_event_types");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(WebhooksCreateContract) {
+    // SDK contract: webhooks.create.
+    types::webhooks::WebhookCreateParams params;
+    params.event_types = std::vector<std::string>{};
+    params.name = "value";
+    params.url = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"event_types":[],"name":"resource","object":"resource","signing_secret":"resource","signing_secret_hint":{},"url":"resource","updated_at":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().webhooks.Create(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/webhook_endpoints");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(WebhooksRetrieveContract) {
+    // SDK contract: webhooks.retrieve.
+    types::webhooks::WebhooksRetrieveParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"event_types":[],"name":"resource","object":"resource","signing_secret_hint":{},"url":"resource","updated_at":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().webhooks.Retrieve("webhook_endpoint_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/webhook_endpoints/webhook_endpoint_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(WebhooksUpdateContract) {
+    // SDK contract: webhooks.update.
+    types::webhooks::WebhookUpdateParams params;
+    params.event_types = std::vector<std::string>{};
+    params.name = "value";
+    params.url = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"event_types":[],"name":"resource","object":"resource","signing_secret_hint":{},"url":"resource","updated_at":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().webhooks.Update("webhook_endpoint_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/webhook_endpoints/webhook_endpoint_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(WebhooksListContract) {
+    // SDK contract: webhooks.list.
+    types::webhooks::WebhookListParams params;
+    params.after = json(R"JSON({"vendor":"value"})JSON");
+    params.limit = 7;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"data":[{"id":"resource","created_at":7,"event_types":[],"name":"resource","object":"resource","signing_secret_hint":{},"url":"resource","updated_at":{},"provider_extension":{"preserved":true}}],"has_more":false,"object":"list"})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().webhooks.List(params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/webhook_endpoints");
+    CHECK(std::string_view(g_request->methodString()) == "GET");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->data.size() == 1);
+    CHECK(!result->HasNextPage());
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(WebhooksDeleteContract) {
+    // SDK contract: webhooks.delete.
+    types::webhooks::WebhooksDeleteParams params;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","deleted":true,"object":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().webhooks.Delete("webhook_endpoint_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/webhook_endpoints/webhook_endpoint_id-value");
+    CHECK(std::string_view(g_request->methodString()) == "DELETE");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(WebhooksRotateSecretContract) {
+    // SDK contract: webhooks.rotate_secret.
+    types::webhooks::WebhookRotateSecretParams params;
+    params.keep_old_secret_active_for_24_hours = true;
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"id":"resource","created_at":7,"event_types":[],"name":"resource","object":"resource","signing_secret":"resource","signing_secret_hint":{},"url":"resource","updated_at":{},"provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().webhooks.RotateSecret("webhook_endpoint_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/webhook_endpoints/webhook_endpoint_id-value/rotate_secret");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
+DROGON_TEST(WebhooksTestContract) {
+    // SDK contract: webhooks.test.
+    types::webhooks::WebhookTestParams params;
+    params.event_type = "value";
+    params.extra_headers["x-resource-contract"] = "yes";
+    g_reply = json(R"JSON({"event_type":"resource","object":"resource","status_code":7,"success":{},"webhook_endpoint_id":"resource","id":"resource","provider_extension":{"preserved":true}})JSON");
+    g_binary = false;
+    g_text = false;
+    g_void = false;
+    auto result{ drogon::sync_wait(client().webhooks.Test("webhook_endpoint_id-value", params)) };
+    REQUIRE(result);
+    REQUIRE(g_request);
+    CHECK(g_request->getOriginalPath() == "/resources/webhook_endpoints/webhook_endpoint_id-value/test");
+    CHECK(std::string_view(g_request->methodString()) == "POST");
+    CHECK(g_request->getHeader("authorization") == "Bearer resource-key");
+    CHECK(g_request->getHeader("x-resource-contract") == "yes");
+    CHECK(result->raw["provider_extension"]["preserved"] == true);
+    CHECK(result->_request_id == "req-resource");
+}
+
 /**
  * @brief Run HTTP contract checks on the local fixture app.
  * @param argc Framework argument count.
