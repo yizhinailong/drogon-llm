@@ -5,19 +5,15 @@
 #pragma once
 
 #include <functional>
-#include <map>
 #include <optional>
 #include <string>
 #include <vector>
 
 #include <json/value.h>
 
-namespace drogon_openai {
+#include "drogon_openai/headers.hpp"
 
-    /**
-     * @brief HTTP header names and values; names are matched without case.
-     */
-    using Headers = std::map<std::string, std::string>;
+namespace drogon_openai {
 
     /**
      * @brief Per-phase inactivity timeouts, in seconds; zero disables a phase timeout.

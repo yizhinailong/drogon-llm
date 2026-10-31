@@ -100,6 +100,8 @@ app().quit()                              drogon calls OpenAIClient::shutdown()
 
 `OpenAI` is a cheap value handle. Copies share immutable transport settings; pass handles and coroutine parameters by value. `WithOptions(OpenAIOptions)` and `Copy(...)` create a client with selected overrides. Headers merge without regard to case, query objects merge by key, and request overrides win over client defaults. `Config()` exposes the resulting settings.
 
+`Headers` owns ordered name/value pairs and supports initializer lists, lookup with `at`/`find`/`contains`, insertion, erasure and iteration. Copies own independent fields; moves transfer storage without allocating. It is a value container rather than a `std::map` alias, so code that requires that exact type should use `Headers`. Existing standard maps can initialize it through `Headers::Storage`.
+
 HTTP and WebSocket methods return `drogon::Task<Result<T>>`; local webhook verification returns `Result<T>`. Use `Get`, `Post`, `Put`, `Patch`, `Delete`, or `Request(method, path, body, options)` for unwrapped relative paths; JSON results include provider-specific fields. A successful empty body yields JSON null. `RequestRaw` returns `RawResponse<Json::Value>` with `status_code`, lowercase `headers`, `body`, `parsed`, and `request_id`. `GetBinary` returns these metadata with unchanged bytes in `parsed` and `body`.
 
 `PostMultipart(path, vector<MultipartPart>, options)` uploads in-memory fields and files. Each part has `name`, `content`, optional `filename`, and optional `content_type`. File bytes, including NULs, are preserved. Parts remain in memory so retries can replay the request.
@@ -204,6 +206,7 @@ The 23 root resources beyond Chat Completions are implemented. See [API resource
 | test_chat_completions | Existing fake API requests/responses, errors, concurrency and continuation thread. |
 | test_chat_json | All request fields, multimodal/tool messages, nested response fields, raw JSON, structured parsing and validation. |
 | test_client | Defaults/copies, methods, raw/binary responses, multipart parsing, retries, timeouts, polling deadlines and create/upload polling helpers. |
+| test_headers | Independent header copies, allocation-free moves, moved-from reuse and assignable coroutine results on both standard libraries. |
 | test_chat_features | Incremental SSE, events, cancellation/errors, structured parsing, stored methods and pagination. |
 | test_http_exchange | Raw TCP framing, split body delivery, TLS rejection, phase deadlines, concurrency and loop affinity. |
 | test_resources | Contracts for all 146 HTTP methods: path, method, result kind, headers and metadata. |

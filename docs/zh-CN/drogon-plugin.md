@@ -100,6 +100,8 @@ app().quit()                              drogon 调用 OpenAIClient::shutdown()
 
 `OpenAI` 是轻量值句柄，副本共享不可变的传输设置；句柄和协程参数均应按值传递。`WithOptions(OpenAIOptions)` 和 `Copy(...)` 返回应用选定覆盖项的新客户端。请求头合并时忽略大小写，查询对象按键合并，单次请求的设置优先于客户端默认值。`Config()` 返回最终配置。
 
+`Headers` 持有按名称排序的键值对，支持初始化列表、`at`/`find`/`contains` 查找、插入、删除和迭代。副本的字段相互独立，移动时转移存储且不分配内存。它是值容器，原先依赖它与 `std::map` 类型完全相同的代码应改用 `Headers`；已有的标准 map 可以通过 `Headers::Storage` 初始化该容器。
+
 所有运行时方法均返回 `drogon::Task<Result<T>>`。未封装的相对路径可使用 `Get`、`Post`、`Put`、`Patch`、`Delete` 或 `Request(method, path, body, options)`；JSON 结果保留厂商字段。成功响应的空 body 返回 JSON null。`RequestRaw` 返回 `RawResponse<Json::Value>`，包含 `status_code`、小写键的 `headers`、`body`、`parsed` 和 `request_id`。`GetBinary` 在 `parsed` 和 `body` 中原样返回二进制内容及这些元数据。
 
 `PostMultipart(path, vector<MultipartPart>, options)` 上传内存中的字段和文件。每项有 `name`、`content`、可选的 `filename` 和 `content_type`。文件字节（包括 NUL）保持不变；数据保留在内存中，以便重试时重放请求。
@@ -204,6 +206,7 @@ Chat Completions 之外的 23 个根资源已实现，完整接口、字段约�
 | test_chat_completions | 原有假 API 的请求响应、错误、并发和协程恢复线程。 |
 | test_chat_json | 全部请求字段、多模态与工具消息、嵌套响应字段、raw JSON 和结构化校验。 |
 | test_client | 默认设置与副本、方法、原始和二进制响应、multipart 解析、重试、超时、轮询截止时间及创建/上传后轮询。 |
+| test_headers | 头字段的独立复制、无分配移动、移动后复用，以及两种标准库下的协程结果赋值。 |
 | test_chat_features | 增量 SSE、事件、取消与错误、结构化解析、存储方法及分页。 |
 | test_http_exchange | 原始 TCP 分帧、分段交付、TLS 拒绝、各阶段截止时间、并发和 loop。 |
 | test_resources | 全部 146 个 HTTP 方法的路径、方法、类型、请求头和元数据契约。 |

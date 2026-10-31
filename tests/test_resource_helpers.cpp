@@ -114,7 +114,7 @@ namespace {
         drogon::app().registerHandler("/helpers/files", [](drogon::HttpRequestPtr const&, std::function<void(drogon::HttpResponsePtr const&)>&& callback) {
             auto const count{ ++g_uploads };
             auto const active{ ++g_active };
-            g_peak = std::max(g_peak.load(), active);
+            g_peak = (std::max)(g_peak.load(), active);
             drogon::app().getLoop()->runAfter(0.02, [callback = std::move(callback), count] {
                 --g_active;
                 Json::Value root;

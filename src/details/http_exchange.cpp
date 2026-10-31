@@ -81,7 +81,7 @@ namespace drogon_openai::details {
                 value.remove_prefix(1);
                 value = trim(value);
                 auto end{ value.find_first_of("=; \t") };
-                end = std::min(end, value.size());
+                end = (std::min)(end, value.size());
                 if (!is_token(value.substr(0, end))) {
                     return false;
                 }
@@ -124,7 +124,7 @@ namespace drogon_openai::details {
                         return false;
                     }
                 } else {
-                    end = std::min(value.find_first_of("; \t"), value.size());
+                    end = (std::min)(value.find_first_of("; \t"), value.size());
                     if (!is_token(value.substr(0, end))) {
                         return false;
                     }
@@ -266,7 +266,7 @@ namespace drogon_openai::details {
                     return;
                 }
                 auto const weak{ weak_from_this() };
-                m_timer = m_loop->runAfter(std::min(seconds / 4, 0.05), [weak] {
+                m_timer = m_loop->runAfter((std::min)(seconds / 4, 0.05), [weak] {
                     if (auto self{ weak.lock() }; self && !self->m_finished && self->m_writing) {
                         self->m_timer = 0;
                         auto const now{ std::chrono::steady_clock::now() };
@@ -363,7 +363,7 @@ namespace drogon_openai::details {
                         self->arm(self->m_request.timeout.read, "read");
                         return 0;
                     }
-                    auto const count{ std::min(capacity, bytes.size() - position) };
+                    auto const count{ (std::min)(capacity, bytes.size() - position) };
                     std::memcpy(buffer, bytes.data() + position, count);
                     position += count;
                     return count;
@@ -506,7 +506,7 @@ namespace drogon_openai::details {
                     return;
                 }
                 if (!m_chunked) {
-                    auto const size{ m_remaining ? std::min(*m_remaining, m_buffer.size()) : m_buffer.size() };
+                    auto const size{ m_remaining ? (std::min)(*m_remaining, m_buffer.size()) : m_buffer.size() };
                     deliver(size);
                     if (!m_finished && m_remaining) {
                         *m_remaining -= size;
@@ -587,7 +587,7 @@ namespace drogon_openai::details {
                         }
                         m_chunk_remaining = size;
                     }
-                    auto const size{ std::min(*m_chunk_remaining, m_buffer.size()) };
+                    auto const size{ (std::min)(*m_chunk_remaining, m_buffer.size()) };
                     deliver(size);
                     if (m_finished) {
                         return;

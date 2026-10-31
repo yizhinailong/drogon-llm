@@ -94,7 +94,7 @@ namespace drogon_openai::details {
             }
             if (auto const it{ headers.find("retry-after") }; it != headers.end()) {
                 auto const date{ drogon::utils::getHttpDate(it->second) };
-                if (date.microSecondsSinceEpoch() > 0 && date.microSecondsSinceEpoch() != std::numeric_limits<std::int64_t>::max()) {
+                if (date.microSecondsSinceEpoch() > 0 && date.microSecondsSinceEpoch() != (std::numeric_limits<std::int64_t>::max)()) {
                     return static_cast<double>(date.microSecondsSinceEpoch() - trantor::Date::now().microSecondsSinceEpoch()) / 1e6;
                 }
             }
@@ -135,7 +135,7 @@ namespace drogon_openai::details {
             }
             thread_local std::mt19937 generator{ std::random_device{}() };
             auto const jitter{ std::uniform_real_distribution<double>{ 0.75, 1.0 }(generator) };
-            return std::min(0.5 * std::pow(2.0, std::min(attempt, 4)), 8.0) * jitter;
+            return (std::min)(0.5 * std::pow(2.0, (std::min)(attempt, 4)), 8.0) * jitter;
         }
 
         /**
@@ -413,7 +413,7 @@ namespace drogon_openai::details {
             }
             double delay{ retry_delay(attempt, fields) };
             if (deadline) {
-                delay = std::min(delay, std::max(0.0, std::chrono::duration<double>(*deadline - std::chrono::steady_clock::now()).count()));
+                delay = (std::min)(delay, (std::max)(0.0, std::chrono::duration<double>(*deadline - std::chrono::steady_clock::now()).count()));
             }
             if (logging_enabled()) {
                 LOG_INFO << "OpenAI retry " << attempt + 1 << " after " << delay << " seconds";

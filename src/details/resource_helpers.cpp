@@ -450,7 +450,7 @@ namespace drogon_openai::details {
         auto ids{ params.file_ids.value_or(std::vector<std::string>{}) };
         for (std::size_t begin{}; begin < files.size();) {
             std::vector<drogon::Task<Result<types::files::FileObject>>> uploads;
-            auto const end{ begin + std::min(max_concurrency, files.size() - begin) };
+            auto const end{ begin + (std::min)(max_concurrency, files.size() - begin) };
             for (; begin < end; ++begin) {
                 uploads.push_back(api.Create({ .file = std::move(files[begin]), .purpose = "assistants", .timeout = params.timeout, .max_retries = params.max_retries, .extra_headers = params.extra_headers, .extra_query = params.extra_query }));
             }
@@ -490,7 +490,7 @@ namespace drogon_openai::details {
             co_return std::unexpected{ std::move(created.error()) };
         }
         std::vector<std::string> part_ids;
-        for (std::size_t offset{}; offset < file.content.size(); offset += std::min(part_size, file.content.size() - offset)) {
+        for (std::size_t offset{}; offset < file.content.size(); offset += (std::min)(part_size, file.content.size() - offset)) {
             auto part{ co_await group.parts.Create(created->id, { .data = UploadFile{ .content = file.content.substr(offset, part_size), .filename = file.filename, .content_type = file.content_type }, .timeout = options.timeout, .max_retries = options.max_retries, .extra_headers = options.extra_headers, .extra_query = options.extra_query }) };
             if (!part) {
                 co_return std::unexpected{ std::move(part.error()) };

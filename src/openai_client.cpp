@@ -496,7 +496,7 @@ namespace drogon_openai {
             auto request_options{ options };
             if (poll.timeout > 0) {
                 auto phase{ options.timeout.value_or(transport->Config().timeout) };
-                auto cap{ [remaining](double value) { return value == 0 ? remaining : std::min(value, remaining); } };
+                auto cap{ [remaining](double value) { return value == 0 ? remaining : (std::min)(value, remaining); } };
                 phase.connect = cap(phase.connect);
                 phase.read = cap(phase.read);
                 phase.write = cap(phase.write);
@@ -522,7 +522,7 @@ namespace drogon_openai {
                 }
             }
             if (poll.timeout > 0) {
-                delay = std::min(delay, std::max(0.0, poll.timeout - std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count()));
+                delay = (std::min)(delay, (std::max)(0.0, poll.timeout - std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count()));
             }
             co_await drogon::sleepCoro(details::current_loop(), delay);
         }
