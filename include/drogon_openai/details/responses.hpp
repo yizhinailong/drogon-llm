@@ -212,5 +212,14 @@ namespace drogon_openai::details {
         [[nodiscard]] auto CompactRaw(
             types::responses::ResponseCompactParams params = {}
         ) const -> drogon::Task<Result<RawResponse<types::responses::CompactedResponse>>>;
+
+        /**
+         * @brief Create and parse JSON Schema output and strict function arguments.
+         * @param params Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Parse(
+            types::responses::ResponsesCreateParams params
+        ) const -> drogon::Task<Result<types::responses::Response>>;
     };
 } // namespace drogon_openai::details
