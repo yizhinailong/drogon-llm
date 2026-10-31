@@ -236,6 +236,29 @@ DROGON_TEST(ResponsesStreamIsIncrementalAndDetectsTruncation) {
     CHECK(thrown.error().kind == ErrorKind::InvalidRequest);
 }
 
+DROGON_TEST(VectorStoreUploadsPreserveIdsAndBoundConcurrency) {
+    g_uploads = 0;
+    auto attached{ drogon::sync_wait(client().vector_stores.files.UploadAndPoll("store", { .content = "data", .filename = "input.txt" }, {}, { .interval = 0.001 })) };
+    REQUIRE(attached);
+    CHECK(attached->status == "completed");
+    CHECK(attached->id == "file-1");
+    CHECK(attached->_request_id == "req-poll");
+    g_uploads = 0;
+    g_peak = 0;
+    std::vector<UploadFile> files(4, { .content = "data", .filename = "file.txt" });
+    auto batch{ drogon::sync_wait(client().vector_stores.file_batches.UploadAndPoll("store", files, { .file_ids = std::vector<std::string>{ "already-uploaded" } }, { .interval = 0.001 }, 2)) };
+    REQUIRE(batch);
+    CHECK(batch->status == "completed");
+    CHECK(batch->_request_id == "req-poll");
+    CHECK(g_uploads == 4);
+    CHECK(g_peak == 2);
+    CHECK(g_batch_ids.size() == 5);
+    CHECK(g_batch_ids[0] == "already-uploaded");
+    auto invalid{ drogon::sync_wait(client().vector_stores.file_batches.UploadAndPoll("store", {}, {}, {}, 0)) };
+    REQUIRE(!invalid);
+    CHECK(invalid.error().kind == ErrorKind::InvalidRequest);
+}
+
 DROGON_TEST(PollingHeadersRespectCaseInsensitiveOverrides) {
     auto result{ drogon::sync_wait(client().vector_stores.files.Poll("file", "store", { .interval = 0.001 }, { .extra_headers = { { "OPENAI-BETA", "custom" }, { "X-STAINLESS-POLL-HELPER", "custom" } } })) };
     REQUIRE(result);

@@ -112,6 +112,51 @@ namespace drogon_openai::details {
             std::string vector_store_id,
             types::vector_stores::FileBatchListFilesParams params = {}
         ) const -> drogon::Task<Result<Page<types::vector_stores::VectorStoreFile>>>;
+
+        /**
+         * @brief Poll vector store batch processing, including failed terminal states.
+         * @param batch_id Owned operation parameters.
+         * @param vector_store_id Owned operation parameters.
+         * @param poll Owned operation parameters.
+         * @param options Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto Poll(
+            std::string batch_id,
+            std::string vector_store_id,
+            PollOptions poll = {},
+            RequestOptions options = {}
+        ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFileBatch>>;
+
+        /**
+         * @brief Create a batch from uploaded file IDs and wait for processing.
+         * @param vector_store_id Owned operation parameters.
+         * @param params Owned operation parameters.
+         * @param poll Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto CreateAndPoll(
+            std::string vector_store_id,
+            types::vector_stores::FileBatchCreateParams params,
+            PollOptions poll = {}
+        ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFileBatch>>;
+
+        /**
+         * @brief Upload files with bounded concurrency, create a batch and poll it.
+         * @param vector_store_id Owned operation parameters.
+         * @param files Owned operation parameters.
+         * @param params Owned operation parameters.
+         * @param poll Owned operation parameters.
+         * @param max_concurrency Owned operation parameters.
+         * @return Operation result or an error.
+         */
+        [[nodiscard]] auto UploadAndPoll(
+            std::string vector_store_id,
+            std::vector<UploadFile> files,
+            types::vector_stores::FileBatchCreateParams params = {},
+            PollOptions poll = {},
+            std::size_t max_concurrency = 5
+        ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFileBatch>>;
     };
 
     /**

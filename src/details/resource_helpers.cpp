@@ -378,4 +378,92 @@ namespace drogon_openai::details {
         co_return co_await group.Poll(created->id, std::move(vector_store_id), std::move(poll), std::move(options));
     }
 
+    /**
+     * @brief Poll vector store batch processing, including failed terminal states.
+     * @param batch_id Owned operation parameters.
+     * @param vector_store_id Owned operation parameters.
+     * @param poll Owned operation parameters.
+     * @param options Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto VectorStoresFileBatches::Poll(
+        std::string batch_id,
+        std::string vector_store_id,
+        PollOptions poll,
+        RequestOptions options
+    ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFileBatch>> {
+
+        auto transport{ m_transport };
+        auto path{ resource_path("/vector_stores/{vector_store_id}/file_batches/{batch_id}", { { "vector_store_id", vector_store_id }, { "batch_id", batch_id } }) };
+        if (!path) {
+            co_return std::unexpected{ std::move(path.error()) };
+        }
+        default_header(options.extra_headers, "OpenAI-Beta", "assistants=v2");
+        poll.terminal_states = { "completed", "failed", "cancelled" };
+        co_return co_await poll_typed<types::vector_stores::VectorStoreFileBatch>(std::move(transport), std::move(*path), std::move(poll), std::move(options));
+    }
+
+    /**
+     * @brief Create a batch from uploaded file IDs and wait for processing.
+     * @param vector_store_id Owned operation parameters.
+     * @param params Owned operation parameters.
+     * @param poll Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto VectorStoresFileBatches::CreateAndPoll(
+        std::string vector_store_id,
+        types::vector_stores::FileBatchCreateParams params,
+        PollOptions poll
+    ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFileBatch>> {
+
+        auto group{ *this };
+        auto options{ params.Options() };
+        auto created{ co_await group.Create(vector_store_id, std::move(params)) };
+        if (!created) {
+            co_return std::unexpected{ std::move(created.error()) };
+        }
+        co_return co_await group.Poll(created->id, std::move(vector_store_id), std::move(poll), std::move(options));
+    }
+
+    /**
+     * @brief Upload files with bounded concurrency, create a batch and poll it.
+     * @param vector_store_id Owned operation parameters.
+     * @param files Owned operation parameters.
+     * @param params Owned operation parameters.
+     * @param poll Owned operation parameters.
+     * @param max_concurrency Owned operation parameters.
+     * @return Operation result or an error.
+     */
+    auto VectorStoresFileBatches::UploadAndPoll(
+        std::string vector_store_id,
+        std::vector<UploadFile> files,
+        types::vector_stores::FileBatchCreateParams params,
+        PollOptions poll,
+        std::size_t max_concurrency
+    ) const -> drogon::Task<Result<types::vector_stores::VectorStoreFileBatch>> {
+
+        auto group{ *this };
+        Files api{ m_transport };
+        if (max_concurrency == 0) {
+            co_return std::unexpected{ Error{ .kind = ErrorKind::InvalidRequest, .message = "max_concurrency must be positive" } };
+        }
+        auto ids{ params.file_ids.value_or(std::vector<std::string>{}) };
+        for (std::size_t begin{}; begin < files.size();) {
+            std::vector<drogon::Task<Result<types::files::FileObject>>> uploads;
+            auto const end{ begin + std::min(max_concurrency, files.size() - begin) };
+            for (; begin < end; ++begin) {
+                uploads.push_back(api.Create({ .file = std::move(files[begin]), .purpose = "assistants", .timeout = params.timeout, .max_retries = params.max_retries, .extra_headers = params.extra_headers, .extra_query = params.extra_query }));
+            }
+            auto uploaded{ co_await drogon::when_all(std::move(uploads)) };
+            for (auto& file : uploaded) {
+                if (!file) {
+                    co_return std::unexpected{ std::move(file.error()) };
+                }
+                ids.push_back(std::move(file->id));
+            }
+        }
+        params.file_ids = std::move(ids);
+        co_return co_await group.CreateAndPoll(std::move(vector_store_id), std::move(params), std::move(poll));
+    }
+
 } // namespace drogon_openai::details
